@@ -1,38 +1,7 @@
 import { Box, Button, Text, TextField, Image } from "@skynexui/components";
+import {useRouter} from 'next/router'
+import React from "react";
 import appConfig from "../config.json";
-
-function GlobalStyle() {
-  return (
-    <style global jsx>
-      {`
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-          list-style: none;
-        }
-        body {
-          font-family: "Open Sans", sans-serif;
-        }
-        /* App fit Height */
-        html,
-        body,
-        #__next {
-          min-height: 100vh;
-          display: flex;
-          flex: 1;
-        }
-        #__next {
-          flex: 1;
-        }
-        #__next > * {
-          flex: 1;
-        }
-        /* ./App fit Height */
-      `}
-    </style>
-  );
-}
 
 function Titulo(props) {
   console.log(props);
@@ -70,11 +39,14 @@ function Titulo(props) {
 // export default HomePage
 
 export default function PaginaInicial() {
-  const username = "Luuan11";
+  // const username = "Luuan11";
+  // Coloca o usuário;
+
+  const [username, setUsername] = React.useState('Luuan11');
+  const roteamento = useRouter();
 
   return (
     <>
-      <GlobalStyle />
       <Box
         styleSheet={{
           display: "flex",
@@ -98,7 +70,7 @@ export default function PaginaInicial() {
             },
             width: "100%",
             maxWidth: "700px",
-            borderRadius: "10px",
+            borderRadius: "15px",
             padding: "32px",
             margin: "16px",
             boxShadow: "0 2px 10px 0 rgb(0 0 0 / 20%)",
@@ -108,6 +80,13 @@ export default function PaginaInicial() {
           {/* Formulário */}
           <Box
             as="form"
+            onSubmit ={ function (stoprefresh) {
+              stoprefresh.preventDefault();
+              //Para as ações defaults como recarregar a página após apertar o button
+              console.log("Algéum submeteu o form");
+              roteamento.push('/chat');
+            }}
+
             styleSheet={{
               display: "flex",
               flexDirection: "column",
@@ -129,7 +108,29 @@ export default function PaginaInicial() {
               {appConfig.name}
             </Text>
 
+            {/* <input 
+              type="text"
+              value={username}
+              onChange={function (name) {
+                console.log("Usuário digitou", name.target.value);
+                // Ação de trocar de valor
+                const newname = name.target.value;
+                //Valor do novo nick name
+                //Através do React 
+                setUsername(newname);
+              }}
+            /> */}
+            
             <TextField
+              value={username}
+              onChange={function (name) {
+                console.log("Usuário digitou", name.target.value);
+                // Ação de trocar de valor
+                const newname = name.target.value;
+                //Valor do novo nick name
+                //Através do React 
+                setUsername(newname);
+              }}
               fullWidth
               textFieldColors={{
                 neutral: {
