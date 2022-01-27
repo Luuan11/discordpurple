@@ -1,27 +1,28 @@
 import { Box, Button, Text, TextField, Image } from "@skynexui/components";
-import {useRouter} from 'next/router'
+import { useRouter } from "next/router";
+
 import React from "react";
 import appConfig from "../config.json";
 
 function Titulo(props) {
-  console.log(props);
-  const Tag = props.tag || 'h1';
-
+  const Tag = props.tag || "h1";
   return (
     <>
       <Tag>{props.children}</Tag>
       <style jsx>
         {`
-       ${Tag} {
-        color: ${appConfig.theme.colors.neutrals['000']};
-        font-size: 24px;
-        font-weight: 600;
-    }
-    `}</style>
+          @import url("https://fonts.googleapis.com/css2?family=Poppins&display=swap");
+          ${Tag} {
+            color: ${appConfig.theme.colors.neutrals["000"]};
+            font-size: 24px;
+            font-weight: 600;
+            font-family: "Poppins", arial, san-serif;
+          }
+        `}
+      </style>
     </>
   );
 }
-
 // Componente React
 // function HomePage()
 // JSX
@@ -32,18 +33,28 @@ function Titulo(props) {
 //       <Titulo tag="h2">Boas Vindas</Titulo>
 //       <h2>Discord</h2>
 //     </div>
-
 //     )
 // }
-
 // export default HomePage
 
 export default function PaginaInicial() {
   // const username = "Luuan11";
   // Coloca o usuário;
 
-  const [username, setUsername] = React.useState('Luuan11');
+  const [username, setUsername] = React.useState("Luuan11");
   const roteamento = useRouter();
+
+  const defaultProfileImg =
+    "https://pbs.twimg.com/profile_images/711687178921717760/DLSZLtLQ_400x400.jpg";
+  const [githubData, setGithubData] = React.useState("");
+
+  fetch(`https://api.github.com/users/${username}`)
+    .then((res) => {
+      return res.json();
+    })
+    .then((data) => {
+      setGithubData(data);
+    });
 
   return (
     <>
@@ -52,6 +63,7 @@ export default function PaginaInicial() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          //Imagem para erro de carregamento
           backgroundImage:
             "url(https://c4.wallpaperflare.com/wallpaper/690/675/807/digital-art-space-universe-pixels-wallpaper-preview.jpg)",
           backgroundRepeat: "no-repeat",
@@ -70,9 +82,10 @@ export default function PaginaInicial() {
             },
             width: "100%",
             maxWidth: "700px",
-            borderRadius: "15px",
+            borderRadius: "20px 5px",
             padding: "32px",
             margin: "16px",
+            opacity: "0.96",
             boxShadow: "0 2px 10px 0 rgb(0 0 0 / 20%)",
             backgroundColor: appConfig.theme.colors.neutrals[700],
           }}
@@ -80,13 +93,12 @@ export default function PaginaInicial() {
           {/* Formulário */}
           <Box
             as="form"
-            onSubmit ={ function (stoprefresh) {
+            onSubmit={function (stoprefresh) {
               stoprefresh.preventDefault();
               //Para as ações defaults como recarregar a página após apertar o button
               console.log("Algéum submeteu o form");
-              roteamento.push('/chat');
+              roteamento.push("/chat");
             }}
-
             styleSheet={{
               display: "flex",
               flexDirection: "column",
@@ -120,15 +132,16 @@ export default function PaginaInicial() {
                 setUsername(newname);
               }}
             /> */}
-            
+
             <TextField
+            required
               value={username}
               onChange={function (name) {
                 console.log("Usuário digitou", name.target.value);
                 // Ação de trocar de valor
                 const newname = name.target.value;
                 //Valor do novo nick name
-                //Através do React 
+                //Através do React
                 setUsername(newname);
               }}
               fullWidth
@@ -140,11 +153,14 @@ export default function PaginaInicial() {
                   backgroundColor: appConfig.theme.colors.neutrals[800],
                 },
               }}
+              placeholder='Digite seu username'
             />
             <Button
               type="submit"
               label="Entrar"
               fullWidth
+              disabled={username.length < 3}
+              required
               buttonColors={{
                 contrastColor: appConfig.theme.colors.neutrals["000"],
                 mainColor: appConfig.theme.colors.primary[400],
@@ -166,7 +182,7 @@ export default function PaginaInicial() {
               backgroundColor: appConfig.theme.colors.neutrals[800],
               border: "1px solid",
               borderColor: appConfig.theme.colors.neutrals[999],
-              borderRadius: "10px",
+              borderRadius: "10px 0px",
               flex: 1,
               minHeight: "240px",
             }}
@@ -176,12 +192,16 @@ export default function PaginaInicial() {
                 borderRadius: "50%",
                 marginBottom: "16px",
               }}
-              src={`https://github.com/${username}.png`}
+              src={
+                username.length > 2
+                  ? `https://github.com/${username}.png`
+                  : defaultProfileImg
+              }
             />
             <Text
               variant="body4"
               styleSheet={{
-                color: appConfig.theme.colors.neutrals[200],
+                color: appConfig.theme.colors.primary[400],
                 backgroundColor: appConfig.theme.colors.neutrals[900],
                 padding: "3px 10px",
                 borderRadius: "1000px",
@@ -189,7 +209,47 @@ export default function PaginaInicial() {
             >
               {username}
             </Text>
+            {/* Condição */}
+            {username.length > 2 && (
+              <Box
+                styleSheet={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  maxWidth: "200px",
+                  padding: "16px",
+                  backgroundColor: appConfig.theme.colors.neutrals[800],
+                  flex: 1,
+                }}
+              >
+                <Text
+                  variant="body4"
+                  styleSheet={{
+                    color: appConfig.theme.colors.primary[400],
+                    backgroundColor: appConfig.theme.colors.neutrals[900],
+                    padding: "3px 10px",
+                    borderRadius: "1000px",
+                  }}
+                >
+                  {/* Api do github */}
+                  {githubData.name}
+                </Text>
+                <Text
+                  variant="body4"
+                  styleSheet={{
+                    color: appConfig.theme.colors.primary[550],
+                    backgroundColor: appConfig.theme.colors.neutrals[900],
+                    padding: "3px 10px",
+                    borderRadius: "1000px",
+                  }}
+                >
+                  {/* Api do github */}
+                  {githubData.location}
+                </Text>
+              </Box>
+            )}
           </Box>
+
           {/* Photo Area */}
         </Box>
       </Box>
