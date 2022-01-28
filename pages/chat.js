@@ -1,6 +1,14 @@
 import { Box, Text, TextField, Image, Button } from "@skynexui/components";
 import React from "react";
 import appConfig from "../config.json";
+import { createClient } from '@supabase/supabase-js'
+
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzMwNDE5NywiZXhwIjoxOTU4ODgwMTk3fQ.HPf0uCWVs3afk2B7g8yPlclAbe5BlEZngLaVEccvSXA';
+
+const SUPABASE_URL = 'https://jcitvudrzoqrthydrepl.supabase.co';
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY );
+
+
 
 function Title(props) {
   const Tag = props.tag || "h1";
@@ -15,7 +23,7 @@ function Title(props) {
           font-weight: 600;
           font-family: "Poppins", arial, sans-serif;
         }
-      `}</style>
+        `}</style>
     </>
   );
 }
@@ -25,14 +33,38 @@ export default function ChatPage() {
   const [message, setMessage] = React.useState("");
   const [messageList, setMessageList] = React.useState([]);
 
+  React.useEffect(() => {
+    supabaseClient
+        .from('message')
+        .select('*')
+        .order('id', { ascending: false })
+        .then(({data}) => {
+          console.log("dados:", data);
+          setMessageList(data);
+        });
+  }, []);
+  
   function handleNovaMensagem(newMessage) {
     const message = {
-      id: messageList.length + 1,
-      from: "Luuan",
+      // id: messageList.length + 1,
+      from: "Luuan11",
       text: newMessage,
     };
-    setMessageList([message, ...messageList]);
+
+  supabaseClient
+      .from("message")
+      .insert([
+        message
+      ])
+      .then(({data}) => {
+      console.log('Mensagem:' , data);
+      setMessageList([
+          data[0], 
+          ...messageList,
+      ]);
+    });
     setMessage("");
+
   }
 
   function handleDeleteMessage(event) {
@@ -75,15 +107,17 @@ export default function ChatPage() {
             borderRadius: "5px",
             padding: "16px",
           }}
-        >
-          <MessageList messages={messageList} setMessageList={setMessageList} />
+          >
+          <MessageList messages={messageList} setMessageList={setMessageList} /> 
             {/* {listaDeMensagens.map((mensagemAtual) => {
-                        return (
-                            <li key={mensagemAtual.id}>
-                                {mensagemAtual.de}: {mensagemAtual.texto}
-                            </li>
-                        )
-                    })} */}
+              return (
+                <li key={mensagemAtual.id}>
+                {mensagemAtual.de}: {mensagemAtual.texto}
+                </li>
+                )
+              })} */}
+                    
+              {/* <MessageList messages={MessageList} /> */}
           <Box
             as="form"
             styleSheet={{
@@ -147,7 +181,7 @@ function Header() {
       <Box
         styleSheet={{
             width: "100%",
-            marginBottom: "16px",
+            marginBottom: "1px",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -182,13 +216,13 @@ function MessageList(props) {
     <Box
       tag="ul"
       styleSheet={{
-        overflow: "hidden",
+        overflowY:"scroll",
         display: "flex",
         flexDirection: "column-reverse",
         flex: 1,
         // cor do texto do chat
         color: appConfig.theme.colors.neutrals["000"],
-        marginBottom: "16px",
+        marginBottom: "10px",
       }}
     >
       {props.messages.map((message) => {
@@ -200,9 +234,6 @@ function MessageList(props) {
                 borderRadius: "5px",
                 padding: "6px",
                 marginBottom: "12px",
-                wordBreak: "break-word",
-                borderWidth: "0px",
-                borderStyle: "solid",
                 borderColor: appConfig.theme.colors.primary[400],
                 hover: {
                 backgroundColor: "rgba( 0, 0, 0, 0.6)",
@@ -225,11 +256,12 @@ function MessageList(props) {
                 marginRight: "8px",
                 marginTop: "20px",
                 }}
-                src={`https://github.com/Luuan11.png`}
+                src={`https://github.com/${message.from}.png`}
               />
               <Text
                 styleSheet={{
-                fontSize: "20px",
+                fontSize: "18px",
+                fontFamily:"Poppins",
                 color: appConfig.theme.colors.primary[500],
                 }}
                 tag="strong"
@@ -238,13 +270,14 @@ function MessageList(props) {
               </Text>
               <Text
                 styleSheet={{
-                    fontSize: "14px",
-                    marginLeft: "8px",
-                    color: appConfig.theme.colors.neutrals[100],
+                    fontSize: "11px",
+                    marginLeft: "10px",
+                    fontFamily:"Poppins",
+                    color: appConfig.theme.colors.neutrals[300],
                 }}
                 tag="span"
               >
-
+                {(new Date().toLocaleDateString())}
               </Text>
 
               <Button
@@ -268,11 +301,13 @@ function MessageList(props) {
             </Box>
             <Text
               styleSheet={{
-                    marginLeft: "58px",
-            }}
-            >
+                fontFamily:"Poppins",
+                marginLeft: "58px",
+              }}
+              >
               {message.text}
             </Text>
+            
           </Text>
         );
       })}

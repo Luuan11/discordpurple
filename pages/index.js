@@ -109,7 +109,7 @@ export default function PaginaInicial() {
               marginBottom: "32px",
             }}
           >
-            <Titulo tag="h2">Boas vindas viajante</Titulo>
+            <Titulo tag="h2">Boas vindas viajante &#128640; </Titulo>
             <Text
               variant="body3"
               styleSheet={{
@@ -205,8 +205,7 @@ export default function PaginaInicial() {
                 backgroundColor: appConfig.theme.colors.neutrals[900],
                 padding: "3px 10px",
                 borderRadius: "1000px",
-              }}
-            >
+              }}>
               {username}
             </Text>
             {/* Condição */}
@@ -220,8 +219,7 @@ export default function PaginaInicial() {
                   padding: "16px",
                   backgroundColor: appConfig.theme.colors.neutrals[800],
                   flex: 1,
-                }}
-              >
+                }}>
                 <Text
                   variant="body4"
                   styleSheet={{
@@ -229,6 +227,7 @@ export default function PaginaInicial() {
                     backgroundColor: appConfig.theme.colors.neutrals[900],
                     padding: "3px 10px",
                     borderRadius: "1000px",
+
                   }}
                 >
                   {/* Api do github */}
@@ -237,7 +236,7 @@ export default function PaginaInicial() {
                 <Text
                   variant="body4"
                   styleSheet={{
-                    color: appConfig.theme.colors.primary[550],
+                    color: appConfig.theme.colors.primary[400],
                     backgroundColor: appConfig.theme.colors.neutrals[900],
                     padding: "3px 10px",
                     borderRadius: "1000px",
