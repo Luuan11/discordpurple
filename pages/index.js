@@ -15,7 +15,6 @@ function Titulo(props) {
       <Tag>{props.children}</Tag>
       <style jsx>
         {`
-          @import url("https://fonts.googleapis.com/css2?family=Poppins&display=swap");
           ${Tag} {
             color: ${appConfig.theme.colors.neutrals["000"]};
             font-size: 24px;
