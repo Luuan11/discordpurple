@@ -1,10 +1,13 @@
 import { Box, Text, TextField, Image, Button } from "@skynexui/components";
 import React from "react";
 import appConfig from "../config.json";
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js';
+import { useRouter } from 'next/router';
+import { ButtonSendSticker } from '../src/components/ButtonSendSticker';
 
+
+//Conexão com o Supabase
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzMwNDE5NywiZXhwIjoxOTU4ODgwMTk3fQ.HPf0uCWVs3afk2B7g8yPlclAbe5BlEZngLaVEccvSXA';
-
 const SUPABASE_URL = 'https://jcitvudrzoqrthydrepl.supabase.co';
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY );
 
@@ -16,7 +19,6 @@ function Title(props) {
     <>
       <Tag>{props.children}</Tag>
       <style jsx>{`
-        @import url("ttps://fonts.googleapis.com/css2?family=Poppins&display=swap");
         ${Tag} {
           color: ${appConfig.theme.colors.primary["550"]};
           font-size: 25px;
@@ -29,9 +31,21 @@ function Title(props) {
 }
 
 export default function ChatPage() {
-  // Sua lógica vai aqui
+
   const [message, setMessage] = React.useState("");
+  const roteamento = useRouter();
+  const usuarioLogado = roteamento.query.username;
   const [messageList, setMessageList] = React.useState([]);
+
+
+  function MensagensRealtime(AdicionaMessage) {
+    return supabaseClient
+    .from('message')
+    .on('INSERT', (respostaAuto) => {
+      AdicionaMessage(respostaAuto.new)
+    })
+    .subscribe();
+  }
 
   React.useEffect(() => {
     supabaseClient
@@ -39,18 +53,28 @@ export default function ChatPage() {
         .select('*')
         .order('id', { ascending: false })
         .then(({data}) => {
-          console.log("dados:", data);
+          // console.log("dados:", data);
           setMessageList(data);
+        });
+
+    MensagensRealtime((newMessage) => {
+                setMessageList((valorAtualLista) => {
+                  return[
+                      newMessage, 
+                      ...valorAtualLista,
+                ]
+            });
         });
   }, []);
   
   function handleNovaMensagem(newMessage) {
     const message = {
-      // id: messageList.length + 1,
-      from: "Luuan11",
+    // id: messageList.length + 1
+      from: usuarioLogado,
       text: newMessage,
     };
 
+  if (newMessage.length !== null && newMessage.trim()) {
   supabaseClient
       .from("message")
       .insert([
@@ -58,24 +82,29 @@ export default function ChatPage() {
       ])
       .then(({data}) => {
       console.log('Mensagem:' , data);
-      setMessageList([
-          data[0], 
-          ...messageList,
-      ]);
     });
+   
     setMessage("");
+  }}
 
-  }
+  function handleDelMessage(id, mensagemfrom) {
+    if (usuarioLogado === mensagemfrom) {
+        supabaseClient
+            .from('message')
+            .delete()
+            .match({ id: id })
+            .then(({ data }) => {
+                const listaDeMensagemFiltrada = messageList.filter((messageFiltered) => {
+                    return messageFiltered.id != data[0].id;
+                })
+                setMessageList(listaDeMensagemFiltrada)
+                alert('mensagem excluida com sucesso :)')
+            })
+    } else {
+        alert('Não Apague as mensagens dos  outros')
+    }
+}
 
-  function handleDeleteMessage(event) {
-    const messageId = Number(event.target.dataset.id);
-    const messageListFiltered = messageList.filter((messageFiltered) => {
-      return messageFiltered.id != messageId;
-    });
-
-    setMessageList(messageListFiltered);
-  }
-  // ./Sua lógica vai aqui
   return (
     <Box
       styleSheet={{
@@ -108,7 +137,7 @@ export default function ChatPage() {
             padding: "16px",
           }}
           >
-          <MessageList messages={messageList} setMessageList={setMessageList} /> 
+          <MessageList messages={messageList} setMessageList={setMessageList} deleteMessage={handleDelMessage} /> 
             {/* {listaDeMensagens.map((mensagemAtual) => {
               return (
                 <li key={mensagemAtual.id}>
@@ -154,12 +183,19 @@ export default function ChatPage() {
                 color: appConfig.theme.colors.neutrals[200],
               }}
             />
+            {/* Callback */}
+            <ButtonSendSticker 
+              onStickClick={(sticker) => {
+                handleNovaMensagem(':sticker: ' + sticker);
+              }}
+            />
+
             <Button
               type="submit"
               label="Enviar"
               onClick={(event) => {
                 event.preventDefault();
-                if (message.length > 0) handleNewMessage(message);
+                if (message.length > 0) handleNovaMensagem(message);
               }}
               buttonColors={{
                 contrastColor: appConfig.theme.colors.neutrals["999"],
@@ -205,13 +241,9 @@ function Header() {
 }
 
 function MessageList(props) {
-  function removeMessage(id) {
-    const mensagemRemovida = props.messages.filter(
-      (message) => id !== message.id
-    );
-    props.setMessageList(mensagemRemovida);
-  }
-  console.log("MessageList", props);
+  // console.log("MessageList", props);
+
+  const handleDelMessage = props.deleteMessage
   return (
     <Box
       tag="ul"
@@ -282,10 +314,7 @@ function MessageList(props) {
 
               <Button
                 iconName="trash"
-                onClick={(event) => {
-                  event.preventDefault();
-                  removeMessage(message.id);
-                }}
+                onClick={() => handleDelMessage(message.id, message.from)}
                 tag="span"
                 data-id={message.id}
                 styleSheet={{
@@ -305,12 +334,19 @@ function MessageList(props) {
                 marginLeft: "58px",
               }}
               >
-              {message.text}
+                {message.text.startsWith(':sticker:')
+                ? (
+                  <Image src={message.text.replace(':sticker:', '')} />
+                )
+                : (
+                  message.text
+                )}
+                
             </Text>
             
           </Text>
         );
       })}
-    </Box>
+  </Box>
   );
 }

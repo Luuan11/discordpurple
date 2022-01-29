@@ -1,8 +1,12 @@
-import { Box, Button, Text, TextField, Image } from "@skynexui/components";
-import { useRouter } from "next/router";
-
-import React from "react";
+//Importações
 import appConfig from "../config.json";
+
+//Skynex
+import React from "react";
+import { Box, Button, Text, TextField, Image } from "@skynexui/components";
+
+//Roteamento do Next
+import { useRouter } from "next/router";
 
 function Titulo(props) {
   const Tag = props.tag || "h1";
@@ -23,38 +27,30 @@ function Titulo(props) {
     </>
   );
 }
-// Componente React
-// function HomePage()
-// JSX
-// {
-//   return (
-//     <div>
-//       <GlobalStyle />
-//       <Titulo tag="h2">Boas Vindas</Titulo>
-//       <h2>Discord</h2>
-//     </div>
-//     )
-// }
-// export default HomePage
 
 export default function PaginaInicial() {
   // const username = "Luuan11";
   // Coloca o usuário;
 
-  const [username, setUsername] = React.useState("Luuan11");
+  const [username, setUsername] = React.useState("");
+
+  //Roteamento do Next
   const roteamento = useRouter();
 
+  //Imagem de erro ao busco o usuário
   const defaultProfileImg =
-    "https://pbs.twimg.com/profile_images/711687178921717760/DLSZLtLQ_400x400.jpg";
+    "https://imgur.com/ihI1j4f.png";
+
+  //Informações adicionais do usuário usando a API do github
   const [githubData, setGithubData] = React.useState("");
 
-  fetch(`https://api.github.com/users/${username}`)
-    .then((res) => {
-      return res.json();
-    })
-    .then((data) => {
-      setGithubData(data);
-    });
+  // fetch(`https://api.github.com/users/${username}`)
+  //   .then((res) => {
+  //     return res.json();
+  //   })
+  //   .then((data) => {
+  //     setGithubData(data);
+  //   });
 
   return (
     <>
@@ -82,7 +78,7 @@ export default function PaginaInicial() {
             },
             width: "100%",
             maxWidth: "700px",
-            borderRadius: "20px 5px",
+            borderRadius: "30px 5px",
             padding: "32px",
             margin: "16px",
             opacity: "0.96",
@@ -95,9 +91,12 @@ export default function PaginaInicial() {
             as="form"
             onSubmit={function (stoprefresh) {
               stoprefresh.preventDefault();
+              
               //Para as ações defaults como recarregar a página após apertar o button
-              console.log("Algéum submeteu o form");
-              roteamento.push("/chat");
+              console.log("Alguém submeteu o form");
+
+              //Passa ao Chat o username 
+              roteamento.push(`/chat?username=${username}`);
             }}
             styleSheet={{
               display: "flex",
@@ -138,12 +137,15 @@ export default function PaginaInicial() {
               value={username}
               onChange={function (name) {
                 console.log("Usuário digitou", name.target.value);
+
                 // Ação de trocar de valor
                 const newname = name.target.value;
+
                 //Valor do novo nick name
                 //Através do React
                 setUsername(newname);
               }}
+
               fullWidth
               textFieldColors={{
                 neutral: {
@@ -182,7 +184,7 @@ export default function PaginaInicial() {
               backgroundColor: appConfig.theme.colors.neutrals[800],
               border: "1px solid",
               borderColor: appConfig.theme.colors.neutrals[999],
-              borderRadius: "10px 0px",
+              borderRadius: "20px 0px",
               flex: 1,
               minHeight: "240px",
             }}
@@ -204,8 +206,11 @@ export default function PaginaInicial() {
                 color: appConfig.theme.colors.primary[400],
                 backgroundColor: appConfig.theme.colors.neutrals[900],
                 padding: "3px 10px",
+                fontSize:"1.30em",
+                marginBottom:"5px",
                 borderRadius: "1000px",
               }}>
+
               {username}
             </Text>
             {/* Condição */}
@@ -221,34 +226,40 @@ export default function PaginaInicial() {
                   flex: 1,
                 }}>
                 <Text
-                  variant="body4"
+                  variant="body5"
                   styleSheet={{
                     color: appConfig.theme.colors.primary[400],
                     backgroundColor: appConfig.theme.colors.neutrals[900],
                     padding: "3px 10px",
+                    marginBottom:"5px",
                     borderRadius: "1000px",
+
 
                   }}
                 >
+                {/* <a href={`https://github.com/${username}`} target="_blank">{username}</a> */}
+
                   {/* Api do github */}
-                  {githubData.name}
+                  {/* {githubData.name} */}
+
                 </Text>
                 <Text
-                  variant="body4"
+                  variant="body6"
                   styleSheet={{
                     color: appConfig.theme.colors.primary[400],
                     backgroundColor: appConfig.theme.colors.neutrals[900],
                     padding: "3px 10px",
+                    marginTop:"3px",
                     borderRadius: "1000px",
                   }}
                 >
                   {/* Api do github */}
-                  {githubData.location}
+                  {/* {githubData.location} */}
+
                 </Text>
               </Box>
             )}
           </Box>
-
           {/* Photo Area */}
         </Box>
       </Box>
