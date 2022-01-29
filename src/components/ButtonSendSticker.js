@@ -75,6 +75,7 @@ export function ButtonSendSticker(props) {
               overflowY: "scroll",
             }}
           >
+            
             {appConfig.stickers.map((sticker) => (
               <Text
                 onClick={() => {
