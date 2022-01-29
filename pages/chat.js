@@ -74,6 +74,8 @@ export default function ChatPage() {
       text: newMessage,
     };
 
+
+  // nova mensagem 
   if (newMessage.length !== null && newMessage.trim()) {
   supabaseClient
       .from("message")

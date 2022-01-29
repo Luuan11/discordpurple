@@ -75,7 +75,8 @@ export function ButtonSendSticker(props) {
               overflowY: "scroll",
             }}
           >
-            
+
+            {/* Pega os Stickers */}
             {appConfig.stickers.map((sticker) => (
               <Text
                 onClick={() => {
@@ -84,6 +85,7 @@ export function ButtonSendSticker(props) {
                     props.onStickerClick(sticker);
                   }
                 }}
+
                 tag="li"
                 key={sticker}
                 styleSheet={{

@@ -44,13 +44,13 @@ export default function PaginaInicial() {
   //Informações adicionais do usuário usando a API do github
   const [githubData, setGithubData] = React.useState("");
 
-  // fetch(`https://api.github.com/users/${username}`)
-  //   .then((res) => {
-  //     return res.json();
-  //   })
-  //   .then((data) => {
-  //     setGithubData(data);
-  //   });
+  fetch(`https://api.github.com/users/${username}`)
+    .then((res) => {
+      return res.json();
+    })
+    .then((data) => {
+      setGithubData(data);
+    });
 
   return (
     <>
@@ -240,7 +240,7 @@ export default function PaginaInicial() {
                 {/* <a href={`https://github.com/${username}`} target="_blank">{username}</a> */}
 
                   {/* Api do github */}
-                  {/* {githubData.name} */}
+                  {githubData.name}
 
                 </Text>
                 <Text
@@ -254,7 +254,7 @@ export default function PaginaInicial() {
                   }}
                 >
                   {/* Api do github */}
-                  {/* {githubData.location} */}
+                  {githubData.location}
 
                 </Text>
               </Box>
