@@ -103,7 +103,7 @@ export default function ChatPage() {
                 alert('mensagem excluida com sucesso :)')
             })
     } else {
-        alert('Não Apague as mensagens dos  outros')
+        alert('Não Apague as mensagens dos outros :(')
     }
 }
 
@@ -187,8 +187,8 @@ export default function ChatPage() {
             />
             {/* Callback */}
             <ButtonSendSticker 
-              onStickClick={(sticker) => {
-                handleNovaMensagem(':sticker: ' + sticker);
+              onStickerClick={(sticker) => {
+                handleNovaMensagem(`:sticker: ${sticker}`);
               }}
             />
 
@@ -199,11 +199,14 @@ export default function ChatPage() {
                 event.preventDefault();
                 if (message.length > 0) handleNovaMensagem(message);
               }}
+              styleSheet={{
+                top:"3px",
+              }}
               buttonColors={{
-                contrastColor: appConfig.theme.colors.neutrals["999"],
-                mainColor: appConfig.theme.colors.primary[550],
+                contrastColor: appConfig.theme.colors.neutrals["000"],
+                mainColor: appConfig.theme.colors.primary[400],
                 mainColorLight: appConfig.theme.colors.primary[400],
-                mainColorStrong: appConfig.theme.colors.primary[500],
+                mainColorStrong: appConfig.theme.colors.primary[600],
               }}
             />
           </Box>

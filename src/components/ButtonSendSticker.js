@@ -9,17 +9,24 @@ export function ButtonSendSticker(props) {
     <Box
       styleSheet={{
         position: "relative",
+        right:"5px",
+        top:"8px",
       }}
     >
       <Button
+      buttonColors={{
+        contrastColor: appConfig.theme.colors.neutrals["000"],
+        mainColor: appConfig.theme.colors.primary[400],
+        mainColorLight: appConfig.theme.colors.primary[400],
+        mainColorStrong: appConfig.theme.colors.primary[600],
+      }}
         styleSheet={{
           borderRadius: "50%",
-          padding: "0 3px 0 0",
+          padding: "5px",
           minWidth: "50px",
           minHeight: "50px",
           fontSize: "20px",
           marginBottom: "8px",
-          lineHeight: "0",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -29,7 +36,7 @@ export function ButtonSendSticker(props) {
             filter: "grayscale(0)",
           },
         }}
-        label="😋"
+        label= "&#128640;"
         onClick={() => setOpenState(!isOpen)}
       />
       {isOpen && (
