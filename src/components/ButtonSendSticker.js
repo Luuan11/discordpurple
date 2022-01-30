@@ -64,7 +64,6 @@ export function ButtonSendSticker(props) {
             styleSheet={{
               color: appConfig.theme.colors.primary[400],
               fontWeight: "bold",
-              fontFamily: "poppins",
               fontSize: "25px",
             }}
           >
@@ -78,6 +77,7 @@ export function ButtonSendSticker(props) {
               justifyContent: "space-between",
               flex: 1,
               paddingTop: "16px",
+              fontFamily:"Arial",
               overflow: "hidden",
               overflowY: "scroll",
             }}
@@ -96,7 +96,7 @@ export function ButtonSendSticker(props) {
                 tag="li"
                 key={sticker}
                 styleSheet={{
-                  width: "50%",
+                  width: "20%",
                   borderRadius: "5px",
                   padding: "10px",
                   focus: {

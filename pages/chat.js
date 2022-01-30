@@ -1,17 +1,17 @@
 import { Box, Text, TextField, Image, Button } from "@skynexui/components";
 import React from "react";
 import appConfig from "../config.json";
-import { createClient } from '@supabase/supabase-js';
-import { useRouter } from 'next/router';
-import { ButtonSendSticker } from '../src/components/ButtonSendSticker';
-
+import { createClient } from "@supabase/supabase-js";
+import { useRouter } from "next/router";
+import { ButtonSendSticker } from "../src/components/ButtonSendSticker";
 
 //Conexão com o Supabase
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzMwNDE5NywiZXhwIjoxOTU4ODgwMTk3fQ.HPf0uCWVs3afk2B7g8yPlclAbe5BlEZngLaVEccvSXA';
-const SUPABASE_URL = 'https://jcitvudrzoqrthydrepl.supabase.co';
-const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY );
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzMwNDE5NywiZXhwIjoxOTU4ODgwMTk3fQ.HPf0uCWVs3afk2B7g8yPlclAbe5BlEZngLaVEccvSXA";
 
-
+  
+const SUPABASE_URL = "https://jcitvudrzoqrthydrepl.supabase.co";
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 function Title(props) {
   const Tag = props.tag || "h1";
@@ -25,105 +25,108 @@ function Title(props) {
           font-weight: 600;
           font-family: "Poppins", arial, sans-serif;
         }
-        `}</style>
+      `}</style>
     </>
   );
 }
 
 export default function ChatPage() {
-
   const [message, setMessage] = React.useState("");
   const roteamento = useRouter();
   const usuarioLogado = roteamento.query.username;
   const [messageList, setMessageList] = React.useState([]);
 
-
   function MensagensRealtime(AdicionaMessage) {
     return supabaseClient
-    .from('message')
-    .on('INSERT', (respostaAuto) => {
-      AdicionaMessage(respostaAuto.new)
-    })
-    .subscribe();
+      .from("message")
+      .on("INSERT", (respostaAuto) => {
+        AdicionaMessage(respostaAuto.new);
+      })
+      .subscribe();
   }
 
   React.useEffect(() => {
     supabaseClient
-        .from('message')
-        .select('*')
-        .order('id', { ascending: false })
-        .then(({data}) => {
-          // console.log("dados:", data);
-          setMessageList(data);
-        });
+      .from("message")
+      .select("*")
+      .order("id", { ascending: false })
+      .then(({ data }) => {
+        // console.log("dados:", data);
+        setMessageList(data);
+      });
 
     MensagensRealtime((newMessage) => {
-                setMessageList((valorAtualLista) => {
-                  return[
-                      newMessage, 
-                      ...valorAtualLista,
-                ]
-            });
-        });
+      setMessageList((valorAtualLista) => {
+        return [newMessage, ...valorAtualLista];
+      });
+    });
   }, []);
-  
+
   function handleNovaMensagem(newMessage) {
     const message = {
-    // id: messageList.length + 1
+      // id: messageList.length + 1
       from: usuarioLogado,
       text: newMessage,
     };
 
+    // nova mensagem
+    if (newMessage.length !== null && newMessage.trim()) {
+      supabaseClient
+        .from("message")
+        .insert([message])
+        .then(({ data }) => {
+          console.log("Mensagem:", data);
+        });
 
-  // nova mensagem 
-  if (newMessage.length !== null && newMessage.trim()) {
-  supabaseClient
-      .from("message")
-      .insert([
-        message
-      ])
-      .then(({data}) => {
-      console.log('Mensagem:' , data);
-    });
-   
-    setMessage("");
-  }}
+      setMessage("");
+    }
+  }
 
   function handleDelMessage(id, mensagemfrom) {
     if (usuarioLogado === mensagemfrom) {
-        supabaseClient
-            .from('message')
-            .delete()
-            .match({ id: id })
-            .then(({ data }) => {
-                const listaDeMensagemFiltrada = messageList.filter((messageFiltered) => {
-                    return messageFiltered.id != data[0].id;
-                })
-                setMessageList(listaDeMensagemFiltrada)
-                alert('mensagem excluida com sucesso :)')
-            })
+      supabaseClient
+        .from("message")
+        .delete()
+        .match({ id: id })
+        .then(({ data }) => {
+          const listaDeMensagemFiltrada = messageList.filter(
+            (messageFiltered) => {
+              return messageFiltered.id != data[0].id;
+            }
+          );
+          setMessageList(listaDeMensagemFiltrada);
+          alert("mensagem excluida com sucesso :)");
+        });
     } else {
-        alert('Não Apague as mensagens dos outros :(')
+      alert("Não Apague as mensagens dos outros :(");
     }
-}
+  }
 
   return (
     <Box
       styleSheet={{
-        display: "flex", alignItems: "center", justifyContent: "center",
-        backgroundImage: `url(https://c4.wallpaperflare.com/wallpaper/690/675/807/digital-art-space-universe-pixels-wallpaper-preview.jpg)`, backgroundRepeat: "no-repeat", backgroundSize: "cover", backgroundBlendMode: "multiply", color: appConfig.theme.colors.neutrals["000"],
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundImage: `url(https://c4.wallpaperflare.com/wallpaper/690/675/807/digital-art-space-universe-pixels-wallpaper-preview.jpg)`,
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "cover",
+        backgroundBlendMode: "multiply",
+        color: appConfig.theme.colors.neutrals["000"],
       }}
     >
       <Box
         styleSheet={{
-            display: "flex", flexDirection: "column", flex: 1,
-            boxShadow: "0 2px 10px 0 rgb(0 0 0 / 20%)",
-            borderRadius: "5px",
-            backgroundColor: "rgba( 0, 0, 0, 0.6)",
-            height: "100%",
-            maxWidth: "95%",
-            maxHeight: "95vh",
-            padding: "15px",
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+          boxShadow: "0 2px 10px 0 rgb(0 0 0 / 20%)",
+          borderRadius: "5px",
+          backgroundColor: "rgba( 0, 0, 0, 0.6)",
+          height: "100%",
+          maxWidth: "95%",
+          maxHeight: "95vh",
+          padding: "15px",
         }}
       >
         <Header />
@@ -138,24 +141,40 @@ export default function ChatPage() {
             borderRadius: "5px",
             padding: "16px",
           }}
-          >
-          <MessageList messages={messageList} setMessageList={setMessageList} deleteMessage={handleDelMessage} /> 
-            {/* {listaDeMensagens.map((mensagemAtual) => {
+        >
+          <MessageList
+            messages={messageList}
+            setMessageList={setMessageList}
+            deleteMessage={handleDelMessage}
+          />
+          {/* {listaDeMensagens.map((mensagemAtual) => {
               return (
                 <li key={mensagemAtual.id}>
                 {mensagemAtual.de}: {mensagemAtual.texto}
                 </li>
                 )
               })} */}
-                    
-              {/* <MessageList messages={MessageList} /> */}
+
+          {/* <MessageList messages={MessageList} /> */}
           <Box
             as="form"
             styleSheet={{
-                display: "flex",
-                alignItems: "center",
+              display: "flex",
+              alignItems: "center",
             }}
           >
+            <Image
+              styleSheet={{
+                width: "50px",
+                height: "50px",
+                borderRadius: "50%",
+                display: "inline-block",
+                marginRight: "10px",
+              }}
+
+              src={`https://github.com/${usuarioLogado}.png`}
+            />
+
             <TextField
               value={message}
               onChange={(event) => {
@@ -181,12 +200,12 @@ export default function ChatPage() {
                 padding: "6px 8px",
                 backgroundColor: appConfig.theme.colors.neutrals[800],
                 marginRight: "12px",
-                fontFamily: "poppins",
+                fontFamily: "Poppins",
                 color: appConfig.theme.colors.neutrals[200],
               }}
             />
             {/* Callback */}
-            <ButtonSendSticker 
+            <ButtonSendSticker
               onStickerClick={(sticker) => {
                 handleNovaMensagem(`:sticker: ${sticker}`);
               }}
@@ -200,7 +219,7 @@ export default function ChatPage() {
                 if (message.length > 0) handleNovaMensagem(message);
               }}
               styleSheet={{
-                top:"3px",
+                top: "3px",
               }}
               buttonColors={{
                 contrastColor: appConfig.theme.colors.neutrals["000"],
@@ -221,11 +240,11 @@ function Header() {
     <>
       <Box
         styleSheet={{
-            width: "100%",
-            marginBottom: "1px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
+          width: "100%",
+          marginBottom: "1px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
         }}
       >
         <Title>Chat</Title>
@@ -248,12 +267,12 @@ function Header() {
 function MessageList(props) {
   // console.log("MessageList", props);
 
-  const handleDelMessage = props.deleteMessage
+  const handleDelMessage = props.deleteMessage;
   return (
     <Box
       tag="ul"
       styleSheet={{
-        overflowY:"scroll",
+        overflowY: "scroll",
         display: "flex",
         flexDirection: "column-reverse",
         flex: 1,
@@ -268,11 +287,11 @@ function MessageList(props) {
             key={message.id}
             tag="li"
             styleSheet={{
-                borderRadius: "5px",
-                padding: "6px",
-                marginBottom: "12px",
-                borderColor: appConfig.theme.colors.primary[400],
-                hover: {
+              borderRadius: "5px",
+              padding: "6px",
+              marginBottom: "12px",
+              borderColor: appConfig.theme.colors.primary[400],
+              hover: {
                 backgroundColor: "rgba( 0, 0, 0, 0.6)",
               },
             }}
@@ -286,20 +305,20 @@ function MessageList(props) {
             >
               <Image
                 styleSheet={{
-                width: "50px",
-                height: "50px",
-                borderRadius: "50%",
-                display: "inline-block",
-                marginRight: "8px",
-                marginTop: "20px",
+                  width: "50px",
+                  height: "50px",
+                  borderRadius: "50%",
+                  display: "inline-block",
+                  marginRight: "8px",
+                  marginTop: "20px",
                 }}
                 src={`https://github.com/${message.from}.png`}
               />
               <Text
                 styleSheet={{
-                fontSize: "18px",
-                fontFamily:"Poppins",
-                color: appConfig.theme.colors.primary[500],
+                  fontSize: "18px",
+                  fontFamily: "Poppins",
+                  color: appConfig.theme.colors.primary[500],
                 }}
                 tag="strong"
               >
@@ -307,14 +326,14 @@ function MessageList(props) {
               </Text>
               <Text
                 styleSheet={{
-                    fontSize: "11px",
-                    marginLeft: "10px",
-                    fontFamily:"Poppins",
-                    color: appConfig.theme.colors.neutrals[300],
+                  fontSize: "11px",
+                  marginLeft: "10px",
+                  fontFamily: "Poppins",
+                  color: appConfig.theme.colors.neutrals[300],
                 }}
                 tag="span"
               >
-                {(new Date().toLocaleDateString())}
+                {new Date().toLocaleDateString()}
               </Text>
 
               <Button
@@ -323,39 +342,37 @@ function MessageList(props) {
                 tag="span"
                 data-id={message.id}
                 styleSheet={{
-                    fontSize: "20px",
-                    marginLeft: "auto",
-                    display: "flex",
+                  fontSize: "20px",
+                  marginLeft: "auto",
+                  display: "flex",
                 }}
                 buttonColors={{
-                    contrastColor: "#763DE1",
-                    mainColor: "rgba( 0, 0, 0, 0)",
+                  contrastColor: "#763DE1",
+                  mainColor: "rgba( 0, 0, 0, 0)",
                 }}
               />
             </Box>
             <Text
               styleSheet={{
-                fontFamily:"Poppins",
+                fontFamily: "Poppins",
                 marginLeft: "58px",
               }}
-              >
-                {message.text.startsWith(':sticker:')
-                ? (
-                  <Image src={message.text.replace(':sticker:', '')} 
+            >
+              {message.text.startsWith(":sticker:") ? (
+                <Image
+                  src={message.text.replace(":sticker:", "")}
                   styleSheet={{
-										maxWidth: '100px',
-										maxHeight: '100px'
-                  }}     />
-                )
-                : (
-                  message.text
-                )}
-                
+                    maxWidth: "100px",
+                    maxHeight: "100px",
+                  }}
+                />
+              ) : (
+                message.text
+              )}
             </Text>
-            
           </Text>
         );
       })}
-  </Box>
+    </Box>
   );
 }

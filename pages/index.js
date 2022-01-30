@@ -146,6 +146,9 @@ export default function PaginaInicial() {
               }}
 
               fullWidth
+              styleSheet={{
+                fontFamily: "Poppins",
+              }}
               textFieldColors={{
                 neutral: {
                   textColor: appConfig.theme.colors.neutrals[200],
