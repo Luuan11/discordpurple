@@ -33,6 +33,7 @@ esse projeto foi desenvolvido com as seguintes tecnologias:
 - Conexão correta com o Banco de Dados
 - Ajuste de resolução
 - ScrollBar personalizada
+- Supabase pausado
 
 ## Instalação
 
