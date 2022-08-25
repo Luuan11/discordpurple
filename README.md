@@ -33,7 +33,10 @@ esse projeto foi desenvolvido com as seguintes tecnologias:
 - Conexão correta com o Banco de Dados
 - Ajuste de resolução
 - ScrollBar personalizada
-- Supabase pausado
+
+
+## 📰 News
+- Supabase pausado (25/08/2022)
 
 ## Instalação
 
