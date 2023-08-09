@@ -7,9 +7,9 @@
     "@skynexui/components": "^1.23.9",
     "@supabase/supabase-js": "^1.29.4",
     "next": "^12.1.0",
-    "node-fetch": "^3.3.2",
     "react": "^17.0.2",
-    "react-dom": "^17.0.2"
+    "react-dom": "^17.0.2",
+    "node-fetch": "~3.2.10"
   },
   "scripts": {
     "dev": "next dev",
