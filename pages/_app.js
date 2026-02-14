@@ -13,8 +13,8 @@ function GlobalStyle() {
             font-family: "Poppins", arial;sans-serif;
           }
           
-          @fontface {
-            font-family: 'Poppins', arial;
+          @font-face {
+            font-family: 'Poppins';
             src: url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
           }
           
@@ -60,7 +60,6 @@ function GlobalStyle() {
   }
 
 export default function CustomApp({ Component, pageProps }) {
-    console.log('Roda em todas as páginas!');
     return (
     <>
         <GlobalStyle />
