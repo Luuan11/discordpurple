@@ -36,7 +36,7 @@ export function ButtonSendSticker(props) {
             filter: "grayscale(0)",
           },
         }}
-        label= "&#128640;"
+        label={String.fromCodePoint(0x1F600)}
         onClick={() => setOpenState(!isOpen)}
       />
       {isOpen && (
