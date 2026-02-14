@@ -1,21 +1,17 @@
+import Head from 'next/head';
+
 function GlobalStyle() {
     return (
       <style global jsx>
         {`
-
-          
+          @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
           * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             list-style: none;
-            font-family: "Poppins", arial;sans-serif;
-          }
-          
-          @font-face {
-            font-family: 'Poppins';
-            src: url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+            font-family: "Poppins", arial, sans-serif;
           }
           
           

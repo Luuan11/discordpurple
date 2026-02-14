@@ -11,19 +11,27 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-let app;
-let database;
+let app = null;
+let database = null;
+let messagesRef = null;
 
-try {
-  app = initializeApp(firebaseConfig);
-  database = getDatabase(app);
-} catch (error) {
-  console.error('Error initializing Firebase:', error);
+const isConfigValid = firebaseConfig.apiKey && firebaseConfig.databaseURL && firebaseConfig.projectId;
+
+if (isConfigValid) {
+  try {
+    app = initializeApp(firebaseConfig);
+    database = getDatabase(app);
+    messagesRef = ref(database, 'messages');
+  } catch (error) {
+    console.error('Error initializing Firebase:', error);
+  }
 }
 
-const messagesRef = ref(database, 'messages');
-
 export async function sendMessage(from, text) {
+  if (!messagesRef) {
+    throw new Error('Firebase not configured');
+  }
+  
   try {
     const newMessage = {
       from,
@@ -40,6 +48,12 @@ export async function sendMessage(from, text) {
 }
 
 export function subscribeToMessages(callback) {
+  if (!messagesRef) {
+    console.error('Firebase not configured');
+    callback([]);
+    return () => {};
+  }
+
   const messagesQuery = query(
     messagesRef,
     orderByChild('createdAt'),
@@ -66,6 +80,10 @@ export function subscribeToMessages(callback) {
 }
 
 export async function deleteMessage(messageId) {
+  if (!database) {
+    throw new Error('Firebase not configured');
+  }
+  
   try {
     const messageRef = ref(database, `messages/${messageId}`);
     await remove(messageRef);
