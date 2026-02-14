@@ -1,53 +1,92 @@
-# Discord - Purple
+# Discord - Purple 🚀
 
-📜 Discord Chat feito durante o evento Imersão Alura 4.
+📜 Discord Chat built using github accounts
 
 ![disc](https://user-images.githubusercontent.com/79935555/151719904-53c2a721-0976-46d8-be29-cd0508997af5.png)
 
-## <p align="center"> <a href="https://discordpurple.vercel.app/">Clique aqui para ver meu projeto!</a> </p>
+## <p align="center"> <a href="https://discordpurple.vercel.app/">Click here to see my project!</a> </p>
 
-## 💬 Sobre
-Projeto criado durante os dias 24/01 à 28/01 junto com a @alura @omariosouto @peas, com o objetivo de aprimoramento em ReactJs, com a finalização das 5 aulas fornecidas pela alura, fui me aprofundando no código e criando elementos que achei necessário, como um botão de deletar mensagem pelo id do usuário, adição de emojis ao campo do chat, icone ilustrativo ao lado do TextField para que o usuário logado saiba qual conta está, também utilizei a API do github buscando foto, região e name do usuário digitado na primeira tela, Espero que gostem :D
+## 💬 About
+A real-time chat application inspired by Discord. Users can log in with their GitHub username, send messages and stickers instantly, and see other users' messages in real-time. The app features a modern UI with a space-themed background, custom scrollbar, and GitHub profile integration that displays the user's avatar, name, and location.
 
-## 💡 Tecnologias:
+## 💡 Technologies
 
-esse projeto foi desenvolvido com as seguintes tecnologias:
+This project was developed with the following technologies:
 
 - HTML, CSS
 - ReactJS
-- Next.js
+- Next.js 15
+- Firebase Realtime Database
 
-## 💡 Ferramentas:
+## 💡 Tools
 
 - Skynexui
-- Supabase
-- Vs Code
+- Firebase (Realtime Database)
+- VS Code
 - Vercel
-- Yarn
+- npm/Yarn
 
+## 📦 Installation
 
-## ✅ Features:
+### Prerequisites
+- Node.js 18+ 
+- npm or Yarn
+- Firebase account (for the database)
 
-- Botão de deletar mensagens
-- Emojis ao chat
-- Conexão correta com o Banco de Dados
-- Ajuste de resolução
-- ScrollBar personalizada
+### Step by Step
 
+1. **Clone the repository**
+```bash
+git clone https://github.com/Luuan11/discordpurple.git
+cd discordpurple
+```
 
-## 📰 News
-- Supabase pausado (25/08/2022)
+2. **Install dependencies**
+```bash
+npm install
+# or
+yarn install
+```
 
-## Instalação
+3. **Configure environment variables**
+```bash
+# Copy the example file
+cp .env.example .env.local
 
-    - Clonar repositorio 
-    $ git clone https://github.com/Luuan11/discordpurple.git 
+NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key_here
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_DATABASE_URL=https://your_project.firebaseio.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+```
 
-    - Instalar dependencias
-    $ yarn install OU npm install
+4. **Run the project**
+```bash
+npm run dev
+# or
+yarn dev
+```
 
-    - Rodar aplicativo
-    $ yarn dev OU npm dev
+5. **Access**
+```
+http://localhost:3000
+```
+
+## ✅ Features
+
+- ✨ Real-time chat
+- 🗑️ Delete message button (only your own messages)
+- 😊 Stickers/Emojis
+- 🔄 Real-time connection with Firebase
+- 📱 Responsive design
+- 🎨 Custom ScrollBar
+- 🔍 GitHub user search with preview
+- ⚡ Optimized performance
+- 🛡️ Enhanced security
+- 🐛 No known bugs
 
 ---
+
 Made with 💜 by [Luan Fernando](https://www.linkedin.com/in/luan-fernando/).
