@@ -8,6 +8,8 @@ import { Box, Button, Text, TextField, Image } from "@skynexui/components";
 //Roteamento do Next
 import { useRouter } from "next/router";
 
+import { SEOHead } from "../src/components/SEOHead";
+
 function Titulo(props) {
   const Tag = props.tag || "h1";
   return (
@@ -32,27 +34,52 @@ export default function PaginaInicial() {
   // Coloca o usuário;
 
   const [username, setUsername] = React.useState("");
+  const [githubData, setGithubData] = React.useState(null);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [error, setError] = React.useState("");
 
   //Roteamento do Next
   const roteamento = useRouter();
 
-  //Imagem de erro ao busco o usuário
-  const defaultProfileImg =
-    "https://imgur.com/ihI1j4f.png";
+  const defaultProfileImg = "https://imgur.com/ihI1j4f.png";
 
   //Informações adicionais do usuário usando a API do github
-  const [githubData, setGithubData] = React.useState("");
+  React.useEffect(() => {
+    if (username.length < 3) {
+      setGithubData(null);
+      setError("");
+      return;
+    }
 
-  fetch(`https://api.github.com/users/${username}`)
-    .then((res) => {
-      return res.json();
-    })
-    .then((data) => {
-      setGithubData(data);
-    });
+    const timer = setTimeout(() => {
+      setIsLoading(true);
+      setError("");
+      
+      fetch(`https://api.github.com/users/${username}`)
+        .then((res) => {
+          if (!res.ok) throw new Error("User not found");
+          return res.json();
+        })
+        .then((data) => {
+          setGithubData(data);
+          setIsLoading(false);
+        })
+        .catch((err) => {
+          setError(err.message);
+          setGithubData(null);
+          setIsLoading(false);
+        });
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [username]);
 
   return (
     <>
+      <SEOHead 
+        title="Discord Purple - Join the Chat"
+        description="Enter your GitHub username and start chatting in real time"
+      />
       <Box
         styleSheet={{
           display: "flex",
@@ -92,10 +119,10 @@ export default function PaginaInicial() {
               stoprefresh.preventDefault();
               
               //Para as ações defaults como recarregar a página após apertar o button
-              console.log("Alguém submeteu o form");
+              if (username.length >= 3 && !error) {
 
-              //Passa ao Chat o username 
-              roteamento.push(`/chat?username=${username}`);
+                roteamento.push(`/chat?username=${username}`);
+              }
             }}
             styleSheet={{
               display: "flex",
@@ -107,7 +134,7 @@ export default function PaginaInicial() {
               marginBottom: "32px",
             }}
           >
-            <Titulo tag="h2">Boas vindas viajante &#128640; </Titulo>
+            <Titulo tag="h2">Welcome traveler &#128640; </Titulo>
             <Text
               variant="body3"
               styleSheet={{
@@ -132,13 +159,11 @@ export default function PaginaInicial() {
             /> */}
 
             <TextField
-            required
+              required
               value={username}
               onChange={function (name) {
-                console.log("Usuário digitou", name.target.value);
-
                 // Ação de trocar de valor
-                const newname = name.target.value;
+                const newname = name.target.value.trim();
 
                 //Valor do novo nick name
                 //Através do React
@@ -157,11 +182,11 @@ export default function PaginaInicial() {
                   backgroundColor: appConfig.theme.colors.neutrals[800],
                 },
               }}
-              placeholder='Digite seu username'
+              placeholder='Enter your username'
             />
             <Button
               type="submit"
-              label="Entrar"
+              label="Enter"
               fullWidth
               disabled={username.length < 3}
               required

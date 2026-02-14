@@ -5,11 +5,17 @@
   "license": "MIT",
   "dependencies": {
     "@skynexui/components": "^1.23.9",
-    "@supabase/supabase-js": "^1.29.4",
-    "next": "^14.2.35",
+    "firebase": "^12.9.0",
+    "next": "^15.1.6",
+    "node-fetch": "~3.2.10",
     "react": "^18",
-    "react-dom": "^18",
-    "node-fetch": "~3.2.10"
+    "react-dom": "^18"
+  },
+  "overrides": {
+    "lodash": "^4.17.21"
+  },
+  "resolutions": {
+    "lodash": "^4.17.21"
   },
   "scripts": {
     "dev": "next dev",

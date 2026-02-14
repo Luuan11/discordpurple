@@ -48,6 +48,14 @@ web_modules/
 # TypeScript cache
 *.tsbuildinfo
 
+# Environment variables
+.env
+.env*.local
+
+# Next.js
+.next/
+out/
+
 # Optional npm cache directory
 .npm
 

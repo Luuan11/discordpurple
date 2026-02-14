@@ -1,17 +1,10 @@
 import { Box, Text, TextField, Image, Button } from "@skynexui/components";
 import React from "react";
 import appConfig from "../config.json";
-import { createClient } from "@supabase/supabase-js";
 import { useRouter } from "next/router";
 import { ButtonSendSticker } from "../src/components/ButtonSendSticker";
-
-//Conexão com o Supabase
-const SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzMwNDE5NywiZXhwIjoxOTU4ODgwMTk3fQ.HPf0uCWVs3afk2B7g8yPlclAbe5BlEZngLaVEccvSXA";
-
-  
-const SUPABASE_URL = "https://jcitvudrzoqrthydrepl.supabase.co";
-const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+import { SEOHead } from "../src/components/SEOHead";
+import { sendMessage, subscribeToMessages, deleteMessage } from "../src/services/firebase";
 
 function Title(props) {
   const Tag = props.tag || "h1";
@@ -35,79 +28,55 @@ export default function ChatPage() {
   const roteamento = useRouter();
   const usuarioLogado = roteamento.query.username;
   const [messageList, setMessageList] = React.useState([]);
-
-  function MensagensRealtime(AdicionaMessage) {
-    return supabaseClient
-      .from("message")
-      .on("INSERT", (respostaAuto) => {
-        AdicionaMessage(respostaAuto.new);
-      })
-      .subscribe();
-  }
+  const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    supabaseClient
-      .from("message")
-      .select("*")
-      .order("id", { ascending: false })
-      .then(({ data }) => {
-        // console.log("dados:", data);
-        setMessageList(data);
-      });
-
-    MensagensRealtime((newMessage) => {
-      setMessageList((valorAtualLista) => {
-        return [newMessage, ...valorAtualLista];
-      });
+    const unsubscribe = subscribeToMessages((messages) => {
+      setMessageList(messages);
+      setLoading(false);
     });
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
-  function handleNovaMensagem(newMessage) {
-    const message = {
-      // id: messageList.length + 1
-      from: usuarioLogado,
-      text: newMessage,
-    };
-
-    // nova mensagem
-    if (newMessage.length !== null && newMessage.trim()) {
-      supabaseClient
-        .from("message")
-        .insert([message])
-        .then(({ data }) => {
-          console.log("Mensagem:", data);
-        });
-
-      setMessage("");
+  async function handleNovaMensagem(newMessage) {
+    if (newMessage && newMessage.trim()) {
+      try {
+        await sendMessage(usuarioLogado, newMessage.trim());
+        setMessage("");
+      } catch (error) {
+        console.error('Error sending message:', error);
+        alert('Error sending message. Please try again.');
+      }
     }
   }
 
-  function handleDelMessage(id, mensagemfrom) {
+  async function handleDelMessage(id, mensagemfrom) {
     if (usuarioLogado === mensagemfrom) {
-      supabaseClient
-        .from("message")
-        .delete()
-        .match({ id: id })
-        .then(({ data }) => {
-          const listaDeMensagemFiltrada = messageList.filter(
-            (messageFiltered) => {
-              return messageFiltered.id != data[0].id;
-            }
-          );
-          setMessageList(listaDeMensagemFiltrada);
-          alert("mensagem excluida com sucesso :)");
-        });
+      try {
+        await deleteMessage(id);
+      } catch (error) {
+        console.error('Error deleting message:', error);
+        alert('Error deleting message.');
+      }
     } else {
-      alert("Não Apague as mensagens dos outros :(");
+      alert("Don't delete other people's messages :(");
     }
   }
 
   return (
-    <Box
-      styleSheet={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+    <>
+      <SEOHead 
+        title={`Chat - ${usuarioLogado || 'Discord Purple'}`}
+        description="Real-time chat with messages and stickers"
+      />
+      <Box
+        styleSheet={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         backgroundImage: `url(https://c4.wallpaperflare.com/wallpaper/690/675/807/digital-art-space-universe-pixels-wallpaper-preview.jpg)`,
         backgroundRepeat: "no-repeat",
         backgroundSize: "cover",
@@ -187,7 +156,7 @@ export default function ChatPage() {
                   if (message.length > 0) handleNovaMensagem(message);
                 }
               }}
-              placeholder="Digite aqui..."
+              placeholder="Type here..."
               outlined
               type="textarea"
               wrap="hard"
@@ -213,7 +182,7 @@ export default function ChatPage() {
 
             <Button
               type="submit"
-              label="Enviar"
+              label="Send"
               onClick={(event) => {
                 event.preventDefault();
                 if (message.length > 0) handleNovaMensagem(message);
@@ -232,6 +201,7 @@ export default function ChatPage() {
         </Box>
       </Box>
     </Box>
+    </>
   );
 }
 
@@ -250,7 +220,7 @@ function Header() {
         <Title>Chat</Title>
         <Button
           type="submit"
-          label="Sair"
+          label="Logout"
           buttonColors={{
             contrastColor: appConfig.theme.colors.neutrals["000"],
             mainColor: appConfig.theme.colors.primary[550],
@@ -333,7 +303,16 @@ function MessageList(props) {
                 }}
                 tag="span"
               >
-                {new Date().toLocaleDateString()}
+                {message.created_at 
+                  ? new Date(message.created_at).toLocaleDateString('pt-BR', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })
+                  : new Date().toLocaleDateString('pt-BR')
+                }
               </Text>
 
               <Button
