@@ -311,11 +311,17 @@ function Header({ onLogout }) {
         <Button
           onClick={handleLogout}
           label="Logout"
+          size="sm"
           buttonColors={{
             contrastColor: appConfig.theme.colors.neutrals["000"],
-            mainColor: appConfig.theme.colors.primary[550],
-            mainColorLight: appConfig.theme.colors.primary[500],
-            mainColorStrong: appConfig.theme.colors.primary[500],
+            mainColor: "#ff6b6b",
+            mainColorLight: "#ff8787",
+            mainColorStrong: "#fa5252",
+          }}
+          styleSheet={{
+            borderRadius: "8px",
+            fontFamily: "Poppins",
+            fontWeight: "500",
           }}
         />
       </Box>
@@ -469,14 +475,16 @@ function MessageList(props) {
                     <Box
                       styleSheet={{
                         position: "absolute",
-                        right: "0",
-                        top: "100%",
+                        right: "100%",
+                        top: "0",
+                        marginRight: "4px",
                         backgroundColor: appConfig.theme.colors.neutrals[800],
                         borderRadius: "8px",
                         padding: "4px 0",
-                        minWidth: "100px",
+                        minWidth: "120px",
                         zIndex: 100,
-                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.5)",
+                        border: `1px solid ${appConfig.theme.colors.neutrals[700]}`,
                       }}
                     >
                       <Box
