@@ -2,7 +2,7 @@
 
 📜 Chat built using GitHub accounts with secure OAuth authentication
 
-![disc](https://user-images.githubusercontent.com/79935555/151719904-53c2a721-0976-46d8-be29-cd0508997af5.png)
+<img width="1300" height="530" alt="image" src="https://github.com/user-attachments/assets/89d34a27-67fe-467f-984a-a9ab56859878" />
 
 ### <p align="center"> <a href="https://discordpurple.vercel.app/">Click here to see my project!</a> </p>
 
