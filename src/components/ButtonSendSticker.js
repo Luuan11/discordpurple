@@ -9,29 +9,27 @@ export function ButtonSendSticker(props) {
     <Box
       styleSheet={{
         position: "relative",
-        right:"5px",
-        top:"8px",
+        flexShrink: 0,
       }}
     >
       <Button
       buttonColors={{
         contrastColor: appConfig.theme.colors.neutrals["000"],
-        mainColor: appConfig.theme.colors.primary[400],
-        mainColorLight: appConfig.theme.colors.primary[400],
-        mainColorStrong: appConfig.theme.colors.primary[600],
+        mainColor: appConfig.theme.colors.neutrals[700],
+        mainColorLight: appConfig.theme.colors.neutrals[600],
+        mainColorStrong: appConfig.theme.colors.neutrals[800],
       }}
         styleSheet={{
           borderRadius: "50%",
           padding: "5px",
-          minWidth: "50px",
-          minHeight: "50px",
+          minWidth: "45px",
+          minHeight: "45px",
           fontSize: "20px",
-          marginBottom: "8px",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: appConfig.theme.colors.primary[400],
-          filter: isOpen ? "grayscale(0)" : "grayscale(1)",
+          backgroundColor: appConfig.theme.colors.neutrals[700],
+          filter: isOpen ? "grayscale(0)" : "grayscale(0.5)",
           hover: {
             filter: "grayscale(0)",
           },

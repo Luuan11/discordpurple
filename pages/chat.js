@@ -4,7 +4,7 @@ import appConfig from "../config.json";
 import { useRouter } from "next/router";
 import { ButtonSendSticker } from "../src/components/ButtonSendSticker";
 import { SEOHead } from "../src/components/SEOHead";
-import { sendMessage, subscribeToMessages, deleteMessage, updateMessage } from "../src/services/firebase";
+import { sendMessage, subscribeToMessages, deleteMessage, updateMessage, MAX_MESSAGE_LENGTH } from "../src/services/firebase";
 import { useAuth } from "../src/hooks/useAuth";
 
 function Title(props) {
@@ -194,75 +194,96 @@ export default function ChatPage() {
             as="form"
             styleSheet={{
               display: "flex",
-              alignItems: "center",
+              flexDirection: "column",
+              gap: "8px",
             }}
           >
-            <Image
+            <Box
               styleSheet={{
-                width: "50px",
-                height: "50px",
-                borderRadius: "50%",
-                display: "inline-block",
-                marginRight: "10px",
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
               }}
+            >
+              <Image
+                styleSheet={{
+                  width: "45px",
+                  height: "45px",
+                  borderRadius: "50%",
+                  flexShrink: 0,
+                }}
+                src={`https://github.com/${usuarioLogado}.png`}
+              />
 
-              src={`https://github.com/${usuarioLogado}.png`}
-            />
+              <TextField
+                value={message}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  if (value.length <= MAX_MESSAGE_LENGTH) {
+                    setMessage(value);
+                  }
+                }}
+                onKeyPress={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    if (message.length > 0) handleNovaMensagem(message);
+                  }
+                }}
+                placeholder="Type here..."
+                outlined
+                type="textarea"
+                wrap="hard"
+                styleSheet={{
+                  flex: 1,
+                  border: "0",
+                  resize: "none",
+                  borderRadius: "5px",
+                  padding: "6px 8px",
+                  backgroundColor: appConfig.theme.colors.neutrals[800],
+                  fontFamily: "Poppins",
+                  color: appConfig.theme.colors.neutrals[200],
+                }}
+              />
+              <ButtonSendSticker
+                onStickerClick={(sticker) => {
+                  handleNovaMensagem(`:sticker: ${sticker}`);
+                }}
+              />
 
-            <TextField
-              value={message}
-              onChange={(event) => {
-                const value = event.target.value;
-                setMessage(value);
-              }}
-              onKeyPress={(event) => {
-                if (event.key === "Enter") {
+              <Button
+                type="submit"
+                iconName="arrowRight"
+                onClick={(event) => {
                   event.preventDefault();
                   if (message.length > 0) handleNovaMensagem(message);
-                }
-              }}
-              placeholder="Type here..."
-              outlined
-              type="textarea"
-              wrap="hard"
+                }}
+                styleSheet={{
+                  minWidth: "45px",
+                  minHeight: "45px",
+                  borderRadius: "50%",
+                  flexShrink: 0,
+                }}
+                buttonColors={{
+                  contrastColor: appConfig.theme.colors.neutrals["000"],
+                  mainColor: appConfig.theme.colors.primary[500],
+                  mainColorLight: appConfig.theme.colors.primary[400],
+                  mainColorStrong: appConfig.theme.colors.primary[600],
+                }}
+              />
+            </Box>
+            <Text
               styleSheet={{
-                width: "100%",
-                border: "0",
-                resize: "none",
-                borderRadius: "5px",
-                marginTop: "20px",
-                padding: "6px 8px",
-                backgroundColor: appConfig.theme.colors.neutrals[800],
-                marginRight: "12px",
+                fontSize: "12px",
                 fontFamily: "Poppins",
-                color: appConfig.theme.colors.neutrals[200],
+                color: message.length >= MAX_MESSAGE_LENGTH 
+                  ? "#ff6b6b" 
+                  : appConfig.theme.colors.neutrals[400],
+                textAlign: "right",
+                marginRight: "60px",
               }}
-            />
-            <ButtonSendSticker
-              onStickerClick={(sticker) => {
-                handleNovaMensagem(`:sticker: ${sticker}`);
-              }}
-            />
-
-            <Button
-              type="submit"
-              iconName="arrowRight"
-              onClick={(event) => {
-                event.preventDefault();
-                if (message.length > 0) handleNovaMensagem(message);
-              }}
-              styleSheet={{
-                minWidth: "50px",
-                minHeight: "50px",
-                borderRadius: "50%",
-              }}
-              buttonColors={{
-                contrastColor: appConfig.theme.colors.neutrals["000"],
-                mainColor: appConfig.theme.colors.primary[500],
-                mainColorLight: appConfig.theme.colors.primary[400],
-                mainColorStrong: appConfig.theme.colors.primary[600],
-              }}
-            />
+            >
+              {message.length}/{MAX_MESSAGE_LENGTH}
+            </Text>
           </Box>
           {sendError && (
             <Text
