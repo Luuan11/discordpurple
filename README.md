@@ -1,13 +1,28 @@
 # Discord - Purple 🚀
 
-📜 Discord Chat built using GitHub accounts with secure OAuth authentication
+📜 Chat built using GitHub accounts with secure OAuth authentication
 
 ![disc](https://user-images.githubusercontent.com/79935555/151719904-53c2a721-0976-46d8-be29-cd0508997af5.png)
 
-## <p align="center"> <a href="https://discordpurple.vercel.app/">Click here to see my project!</a> </p>
+### <p align="center"> <a href="https://discordpurple.vercel.app/">Click here to see my project!</a> </p>
 
 ## 💬 About
 A real-time chat application inspired by Discord. Users authenticate securely with GitHub OAuth, ensuring no one can impersonate another user. Send messages and stickers instantly, and see other users' messages in real-time. The app features a modern UI with a space-themed background, custom scrollbar, and GitHub profile integration.
+
+## ✅ Features
+
+- 🔐 **Secure GitHub OAuth authentication** - No impersonation possible
+- ✨ **Real-time chat** - Powered by Firebase Realtime Database
+- ✏️ **Edit messages** - 3-dot menu with edit/delete options
+- 🗑️ **Delete messages** - Only your own messages
+- 📝 **Edited indicator** - Shows when a message was edited with timestamp
+- ⏱️ **Message timestamps** - See when each message was sent
+- 😊 **Stickers** - Local SVG stickers for fast loading
+- 🚦 **Rate limiting** - 3 seconds between messages (anti-flood)
+- 📏 **Character limit** - 200 characters per message with live counter
+- 📱 **Responsive design** - Works on mobile and desktop
+- 🎨 **Custom ScrollBar** - Beautiful purple-themed UI
+- ⚡ **Optimized performance** - No external image requests for stickers
 
 ## 💡 Technologies
 
@@ -30,7 +45,7 @@ This project was developed with the following technologies:
 
 ### Prerequisites
 - Node.js 18+ 
-- npm or Yarn
+- npm
 - Firebase account
 - GitHub OAuth App
 
@@ -45,8 +60,6 @@ cd discordpurple
 2. **Install dependencies**
 ```bash
 npm install
-# or
-yarn install
 ```
 
 3. **Configure Firebase**
@@ -86,29 +99,12 @@ NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 5. **Run the project**
 ```bash
 npm run dev
-# or
-yarn dev
 ```
 
 6. **Access**
 ```
 http://localhost:3000
 ```
-
-## ✅ Features
-
-- 🔐 Secure GitHub OAuth authentication
-- ✨ Real-time chat
-- 🗑️ Delete message button (only your own messages)
-- 😊 Stickers/Emojis
-- 🔄 Real-time connection with Firebase
-- 📱 Responsive design
-- 🎨 Custom ScrollBar
-- 🔍 GitHub user search with preview
-- ⚡ Optimized performance
-- 🛡️ Enhanced security
-- 🐛 No known bugs
-
 ---
 
 Made with 💜 by [Luan Fernando](https://www.linkedin.com/in/luan-fernando/).
