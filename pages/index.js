@@ -104,7 +104,7 @@ export default function PaginaInicial() {
           alignItems: "center",
           justifyContent: "center",
           backgroundImage:
-            "url(https://c4.wallpaperflare.com/wallpaper/690/675/807/digital-art-space-universe-pixels-wallpaper-preview.jpg)",
+            "url(/wallpaper/wallpaper.jpg)",
           backgroundRepeat: "no-repeat",
           backgroundSize: "cover",
           backgroundBlendMode: "multiply",

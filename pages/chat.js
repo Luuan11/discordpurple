@@ -4,7 +4,7 @@ import appConfig from "../config.json";
 import { useRouter } from "next/router";
 import { ButtonSendSticker } from "../src/components/ButtonSendSticker";
 import { SEOHead } from "../src/components/SEOHead";
-import { sendMessage, subscribeToMessages, deleteMessage } from "../src/services/firebase";
+import { sendMessage, subscribeToMessages, deleteMessage, updateMessage } from "../src/services/firebase";
 import { useAuth } from "../src/hooks/useAuth";
 
 function Title(props) {
@@ -26,18 +26,13 @@ function Title(props) {
 
 function formatMessageTime(timestamp) {
   const messageDate = new Date(timestamp);
-  const isToday = messageDate.toDateString() === new Date().toDateString();
-  
-  const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: false };
-
-  if (isToday) {
-    return messageDate.toLocaleTimeString('en-US', timeOptions);
-  }
-
   return messageDate.toLocaleDateString('en-US', {
-    day: '2-digit',
     month: 'short',
-    ...timeOptions
+    day: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
   });
 }
 
@@ -99,6 +94,20 @@ export default function ChatPage() {
       }
     } else {
       alert("Don't delete other people's messages :(");
+    }
+  }
+
+  async function handleEditMessage(id, newText, originalFrom) {
+    if (usuarioLogado === originalFrom) {
+      try {
+        await updateMessage(id, newText, originalFrom);
+      } catch (error) {
+        console.error('Error editing message:', error);
+        alert(error.message || 'Error editing message.');
+        throw error;
+      }
+    } else {
+      alert("You can only edit your own messages.");
     }
   }
 
@@ -178,6 +187,8 @@ export default function ChatPage() {
             messages={messageList}
             setMessageList={setMessageList}
             deleteMessage={handleDelMessage}
+            editMessage={handleEditMessage}
+            currentUser={usuarioLogado}
           />
           <Box
             as="form"
@@ -314,6 +325,36 @@ function Header({ onLogout }) {
 
 function MessageList(props) {
   const handleDelMessage = props.deleteMessage;
+  const handleEditMessage = props.editMessage;
+  const [openMenuId, setOpenMenuId] = React.useState(null);
+  const [editingMessageId, setEditingMessageId] = React.useState(null);
+  const [editText, setEditText] = React.useState("");
+
+  const handleStartEdit = (message) => {
+    setEditText(message.text);
+    setEditingMessageId(message.id);
+    setOpenMenuId(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMessageId(null);
+    setEditText("");
+  };
+
+  const handleSaveEdit = async (message) => {
+    if (editText.trim() && editText !== message.text) {
+      try {
+        await handleEditMessage(message.id, editText, message.from);
+        setEditingMessageId(null);
+        setEditText("");
+      } catch (error) {
+        // Error is handled in parent function
+      }
+    } else {
+      handleCancelEdit();
+    }
+  };
+
   return (
     <Box
       tag="ul"
@@ -327,6 +368,9 @@ function MessageList(props) {
       }}
     >
       {props.messages.map((message) => {
+        const isEditing = editingMessageId === message.id;
+        const isSticker = message.text.startsWith(":sticker:");
+        
         return (
           <Text
             key={message.id}
@@ -383,30 +427,134 @@ function MessageList(props) {
                   : 'just now'
                 }
               </Text>
+              {message.editedAt && (
+                <Text
+                  styleSheet={{
+                    fontSize: "10px",
+                    marginLeft: "8px",
+                    fontFamily: "Poppins",
+                    color: appConfig.theme.colors.neutrals[400],
+                    fontStyle: "italic",
+                  }}
+                  tag="span"
+                >
+                  (edited {formatMessageTime(message.editedAt)})
+                </Text>
+              )}
 
-              <Button
-                iconName="trash"
-                onClick={() => handleDelMessage(message.id, message.from)}
-                tag="span"
-                data-id={message.id}
-                styleSheet={{
-                  fontSize: "20px",
-                  marginLeft: "auto",
-                  display: "flex",
-                }}
-                buttonColors={{
-                  contrastColor: "#763DE1",
-                  mainColor: "rgba( 0, 0, 0, 0)",
-                }}
-              />
+              {props.currentUser === message.from && !isSticker && (
+                <Box
+                  styleSheet={{
+                    marginLeft: "auto",
+                    position: "relative",
+                  }}
+                >
+                  <Button
+                    iconName="ellipsisV"
+                    onClick={() => setOpenMenuId(openMenuId === message.id ? null : message.id)}
+                    styleSheet={{
+                      fontSize: "16px",
+                      minWidth: "30px",
+                      minHeight: "30px",
+                      padding: "4px",
+                    }}
+                    buttonColors={{
+                      contrastColor: appConfig.theme.colors.neutrals[300],
+                      mainColor: "rgba(0, 0, 0, 0)",
+                      mainColorLight: "rgba(0, 0, 0, 0.3)",
+                      mainColorStrong: "rgba(0, 0, 0, 0.3)",
+                    }}
+                  />
+                  {openMenuId === message.id && (
+                    <Box
+                      styleSheet={{
+                        position: "absolute",
+                        right: "0",
+                        top: "100%",
+                        backgroundColor: appConfig.theme.colors.neutrals[800],
+                        borderRadius: "8px",
+                        padding: "4px 0",
+                        minWidth: "100px",
+                        zIndex: 100,
+                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+                      }}
+                    >
+                      <Box
+                        tag="button"
+                        onClick={() => handleStartEdit(message)}
+                        styleSheet={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          width: "100%",
+                          padding: "8px 12px",
+                          backgroundColor: "transparent",
+                          border: "none",
+                          color: appConfig.theme.colors.neutrals["000"],
+                          fontSize: "14px",
+                          fontFamily: "Poppins",
+                          cursor: "pointer",
+                          hover: {
+                            backgroundColor: appConfig.theme.colors.neutrals[700],
+                          },
+                        }}
+                      >
+                        {String.fromCodePoint(0x270F)} Edit
+                      </Box>
+                      <Box
+                        tag="button"
+                        onClick={() => {
+                          handleDelMessage(message.id, message.from);
+                          setOpenMenuId(null);
+                        }}
+                        styleSheet={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          width: "100%",
+                          padding: "8px 12px",
+                          backgroundColor: "transparent",
+                          border: "none",
+                          color: "#ff6b6b",
+                          fontSize: "14px",
+                          fontFamily: "Poppins",
+                          cursor: "pointer",
+                          hover: {
+                            backgroundColor: appConfig.theme.colors.neutrals[700],
+                          },
+                        }}
+                      >
+                        {String.fromCodePoint(0x1F5D1)} Delete
+                      </Box>
+                    </Box>
+                  )}
+                </Box>
+              )}
+              {props.currentUser === message.from && isSticker && (
+                <Button
+                  iconName="trash"
+                  onClick={() => handleDelMessage(message.id, message.from)}
+                  styleSheet={{
+                    fontSize: "16px",
+                    marginLeft: "auto",
+                    minWidth: "30px",
+                    minHeight: "30px",
+                    padding: "4px",
+                  }}
+                  buttonColors={{
+                    contrastColor: "#ff6b6b",
+                    mainColor: "rgba(0, 0, 0, 0)",
+                  }}
+                />
+              )}
             </Box>
-            <Text
+            <Box
               styleSheet={{
                 fontFamily: "Poppins",
                 marginLeft: "58px",
               }}
             >
-              {message.text.startsWith(":sticker:") ? (
+              {isSticker ? (
                 <Image
                   src={message.text.replace(":sticker:", "")}
                   styleSheet={{
@@ -414,10 +562,86 @@ function MessageList(props) {
                     maxHeight: "100px",
                   }}
                 />
+              ) : isEditing ? (
+                <Box
+                  styleSheet={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "8px",
+                  }}
+                >
+                  <TextField
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSaveEdit(message);
+                      }
+                      if (e.key === "Escape") {
+                        handleCancelEdit();
+                      }
+                    }}
+                    styleSheet={{
+                      width: "100%",
+                      backgroundColor: appConfig.theme.colors.neutrals[800],
+                      border: `1px solid ${appConfig.theme.colors.primary[500]}`,
+                      borderRadius: "5px",
+                      padding: "8px",
+                      color: appConfig.theme.colors.neutrals["000"],
+                      fontFamily: "Poppins",
+                    }}
+                    textFieldColors={{
+                      neutral: {
+                        textColor: appConfig.theme.colors.neutrals["000"],
+                        mainColor: appConfig.theme.colors.neutrals[900],
+                        mainColorHighlight: appConfig.theme.colors.primary[500],
+                        backgroundColor: appConfig.theme.colors.neutrals[800],
+                      },
+                    }}
+                  />
+                  <Box
+                    styleSheet={{
+                      display: "flex",
+                      gap: "8px",
+                    }}
+                  >
+                    <Text
+                      styleSheet={{
+                        fontSize: "11px",
+                        color: appConfig.theme.colors.neutrals[400],
+                      }}
+                    >
+                      Press Enter to save, Escape to cancel
+                    </Text>
+                    <Button
+                      label="Save"
+                      size="xs"
+                      onClick={() => handleSaveEdit(message)}
+                      buttonColors={{
+                        contrastColor: appConfig.theme.colors.neutrals["000"],
+                        mainColor: appConfig.theme.colors.primary[500],
+                        mainColorLight: appConfig.theme.colors.primary[400],
+                        mainColorStrong: appConfig.theme.colors.primary[600],
+                      }}
+                    />
+                    <Button
+                      label="Cancel"
+                      size="xs"
+                      onClick={handleCancelEdit}
+                      buttonColors={{
+                        contrastColor: appConfig.theme.colors.neutrals["000"],
+                        mainColor: appConfig.theme.colors.neutrals[700],
+                        mainColorLight: appConfig.theme.colors.neutrals[600],
+                        mainColorStrong: appConfig.theme.colors.neutrals[800],
+                      }}
+                    />
+                  </Box>
+                </Box>
               ) : (
-                message.text
+                <Text>{message.text}</Text>
               )}
-            </Text>
+            </Box>
           </Text>
         );
       })}

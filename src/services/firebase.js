@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, push, onValue, remove, query, orderByChild, limitToLast } from 'firebase/database';
+import { getDatabase, ref, push, onValue, remove, update, query, orderByChild, limitToLast } from 'firebase/database';
 import { 
   getAuth, 
   signInWithPopup, 
@@ -123,6 +123,33 @@ export async function deleteMessage(messageId) {
     return { success: true };
   } catch (error) {
     console.error('Error deleting message:', error);
+    throw error;
+  }
+}
+
+export async function updateMessage(messageId, newText, originalFrom) {
+  if (!database) {
+    throw new Error('Firebase not configured');
+  }
+
+  if (!newText || newText.trim().length === 0) {
+    throw new Error('Message cannot be empty');
+  }
+
+  if (newText.length > 1000) {
+    throw new Error('Message too long. Maximum 1000 characters.');
+  }
+
+  try {
+    const messageRef = ref(database, `messages/${messageId}`);
+    await update(messageRef, {
+      text: newText.trim(),
+      editedAt: Date.now(),
+      editedBy: originalFrom
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('Error updating message:', error);
     throw error;
   }
 }
