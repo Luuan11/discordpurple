@@ -85,7 +85,7 @@ export default function ChatPage() {
   }
 
   async function handleDelMessage(id, mensagemfrom) {
-    if (usuarioLogado === mensagemfrom) {
+    if (usuarioLogado?.toLowerCase() === mensagemfrom?.toLowerCase()) {
       try {
         await deleteMessage(id);
       } catch (error) {
@@ -98,7 +98,7 @@ export default function ChatPage() {
   }
 
   async function handleEditMessage(id, newText, originalFrom) {
-    if (usuarioLogado === originalFrom) {
+    if (usuarioLogado?.toLowerCase() === originalFrom?.toLowerCase()) {
       try {
         await updateMessage(id, newText, originalFrom);
       } catch (error) {
@@ -246,17 +246,19 @@ export default function ChatPage() {
 
             <Button
               type="submit"
-              label="Send"
+              iconName="arrowRight"
               onClick={(event) => {
                 event.preventDefault();
                 if (message.length > 0) handleNovaMensagem(message);
               }}
               styleSheet={{
-                top: "3px",
+                minWidth: "50px",
+                minHeight: "50px",
+                borderRadius: "50%",
               }}
               buttonColors={{
                 contrastColor: appConfig.theme.colors.neutrals["000"],
-                mainColor: appConfig.theme.colors.primary[400],
+                mainColor: appConfig.theme.colors.primary[500],
                 mainColorLight: appConfig.theme.colors.primary[400],
                 mainColorStrong: appConfig.theme.colors.primary[600],
               }}
@@ -335,6 +337,10 @@ function MessageList(props) {
   const [openMenuId, setOpenMenuId] = React.useState(null);
   const [editingMessageId, setEditingMessageId] = React.useState(null);
   const [editText, setEditText] = React.useState("");
+
+  const isOwnMessage = (messageFrom) => {
+    return props.currentUser?.toLowerCase() === messageFrom?.toLowerCase();
+  };
 
   const handleStartEdit = (message) => {
     setEditText(message.text);
@@ -448,7 +454,7 @@ function MessageList(props) {
                 </Text>
               )}
 
-              {props.currentUser === message.from && !isSticker && (
+              {isOwnMessage(message.from) && !isSticker && (
                 <Box
                   styleSheet={{
                     marginLeft: "auto",
@@ -538,7 +544,7 @@ function MessageList(props) {
                   )}
                 </Box>
               )}
-              {props.currentUser === message.from && isSticker && (
+              {isOwnMessage(message.from) && isSticker && (
                 <Button
                   iconName="trash"
                   onClick={() => handleDelMessage(message.id, message.from)}
