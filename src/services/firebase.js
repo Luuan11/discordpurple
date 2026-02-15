@@ -1,5 +1,12 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, push, onValue, remove, query, orderByChild, limitToLast } from 'firebase/database';
+import { 
+  getAuth, 
+  signInWithPopup, 
+  GithubAuthProvider, 
+  signOut as firebaseSignOut,
+  onAuthStateChanged 
+} from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -14,6 +21,8 @@ const firebaseConfig = {
 let app = null;
 let database = null;
 let messagesRef = null;
+let auth = null;
+let githubProvider = null;
 
 const isConfigValid = firebaseConfig.apiKey && firebaseConfig.databaseURL && firebaseConfig.projectId;
 
@@ -22,24 +31,48 @@ if (isConfigValid) {
     app = initializeApp(firebaseConfig);
     database = getDatabase(app);
     messagesRef = ref(database, 'messages');
+    auth = getAuth(app);
+    githubProvider = new GithubAuthProvider();
+    githubProvider.addScope('read:user');
   } catch (error) {
     console.error('Error initializing Firebase:', error);
   }
 }
 
+const userLastMessageTime = new Map();
+const RATE_LIMIT_MS = 3000;
+const MAX_MESSAGE_LENGTH = 1000;
+
 export async function sendMessage(from, text) {
   if (!messagesRef) {
     throw new Error('Firebase not configured');
   }
-  
+
+  if (!text || text.trim().length === 0) {
+    throw new Error('Message cannot be empty');
+  }
+
+  if (text.length > MAX_MESSAGE_LENGTH) {
+    throw new Error(`Message too long. Maximum ${MAX_MESSAGE_LENGTH} characters.`);
+  }
+
+  const now = Date.now();
+  const lastMessageTime = userLastMessageTime.get(from) || 0;
+  const timeSinceLastMessage = now - lastMessageTime;
+
+  if (timeSinceLastMessage < RATE_LIMIT_MS) {
+    const waitTime = Math.ceil((RATE_LIMIT_MS - timeSinceLastMessage) / 1000);
+    throw new Error(`Please wait ${waitTime} second(s) before sending another message.`);
+  }
+
   try {
-    const newMessage = {
+    await push(messagesRef, {
       from,
-      text,
-      createdAt: Date.now(),
-    };
+      text: text.trim(),
+      createdAt: now,
+    });
     
-    await push(messagesRef, newMessage);
+    userLastMessageTime.set(from, now);
     return { success: true };
   } catch (error) {
     console.error('Error sending message:', error);
@@ -94,4 +127,76 @@ export async function deleteMessage(messageId) {
   }
 }
 
-export { database, messagesRef };
+export async function signInWithGitHub() {
+  if (!auth || !githubProvider) {
+    throw new Error('Firebase Auth not configured');
+  }
+  
+  try {
+    const result = await signInWithPopup(auth, githubProvider);
+    const credential = GithubAuthProvider.credentialFromResult(result);
+    const token = credential?.accessToken;
+    const user = result.user;
+    const githubUsername = user.reloadUserInfo?.screenName || 
+                          user.providerData?.[0]?.uid ||
+                          user.displayName;
+    
+    return {
+      user,
+      githubUsername,
+      token,
+      photoURL: user.photoURL,
+      displayName: user.displayName,
+      email: user.email,
+      uid: user.uid
+    };
+  } catch (error) {
+    console.error('Error signing in with GitHub:', error);
+    throw error;
+  }
+}
+
+export async function signOut() {
+  if (!auth) {
+    throw new Error('Firebase Auth not configured');
+  }
+  
+  try {
+    await firebaseSignOut(auth);
+    return { success: true };
+  } catch (error) {
+    console.error('Error signing out:', error);
+    throw error;
+  }
+}
+
+export function onAuthChange(callback) {
+  if (!auth) {
+    callback(null);
+    return () => {};
+  }
+  
+  return onAuthStateChanged(auth, (user) => {
+    if (user) {
+      const githubUsername = user.reloadUserInfo?.screenName || 
+                            user.providerData?.[0]?.uid ||
+                            user.displayName;
+      callback({
+        user,
+        githubUsername,
+        photoURL: user.photoURL,
+        displayName: user.displayName,
+        email: user.email,
+        uid: user.uid
+      });
+    } else {
+      callback(null);
+    }
+  });
+}
+
+export function getCurrentUser() {
+  return auth?.currentUser || null;
+}
+
+export { database, messagesRef, auth };

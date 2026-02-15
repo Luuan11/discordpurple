@@ -1,9 +1,3 @@
-/**
- * @param {string|Date} date 
- * @param {boolean} includeTime 
- * @returns {string} 
- */
-
 export function formatDate(date, includeTime = true) {
   if (!date) return new Date().toLocaleDateString('pt-BR');
   
@@ -20,11 +14,6 @@ export function formatDate(date, includeTime = true) {
 
   return new Date(date).toLocaleDateString('pt-BR', options);
 }
-
-/**
- * @param {string} username 
- * @returns {object} 
- */
 
 export function validateUsername(username) {
   if (!username || username.length < 3) {
@@ -46,11 +35,6 @@ export function validateUsername(username) {
   return { isValid: true, error: null };
 }
 
-/**
- * @param {string} text 
- * @returns {string} 
- */
-
 export function sanitizeText(text) {
   if (!text) return '';
   
@@ -62,29 +46,13 @@ export function sanitizeText(text) {
     .replace(/\//g, '&#x2F;');
 }
 
-/**
- * @param {string} text
- * @returns {boolean}
- */
-
 export function isSticker(text) {
   return text && text.startsWith(':sticker:');
 }
 
-/**
- * @param {string} text
- * @returns {string}
- */
-
 export function getStickerUrl(text) {
   return text.replace(':sticker:', '').trim();
 }
-
-/**
- * @param {Function} func 
- * @param {number} wait 
- * @returns {Function}
- */
 
 export function debounce(func, wait) {
   let timeout;

@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import { ButtonSendSticker } from "../src/components/ButtonSendSticker";
 import { SEOHead } from "../src/components/SEOHead";
 import { sendMessage, subscribeToMessages, deleteMessage } from "../src/services/firebase";
+import { useAuth } from "../src/hooks/useAuth";
 
 function Title(props) {
   const Tag = props.tag || "h1";
@@ -23,14 +24,48 @@ function Title(props) {
   );
 }
 
+function formatMessageTime(timestamp) {
+  const messageDate = new Date(timestamp);
+  const isToday = messageDate.toDateString() === new Date().toDateString();
+  
+  const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: false };
+
+  if (isToday) {
+    return messageDate.toLocaleTimeString('en-US', timeOptions);
+  }
+
+  return messageDate.toLocaleDateString('en-US', {
+    day: '2-digit',
+    month: 'short',
+    ...timeOptions
+  });
+}
+
 export default function ChatPage() {
   const [message, setMessage] = React.useState("");
+  const [sendError, setSendError] = React.useState("");
   const roteamento = useRouter();
-  const usuarioLogado = roteamento.query.username;
+  const { user, loading: authLoading, logout, isAuthenticated } = useAuth();
+  const usuarioLogado = user?.githubUsername || roteamento.query.username;
   const [messageList, setMessageList] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
+    if (sendError) {
+      const timer = setTimeout(() => setSendError(""), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [sendError]);
+
+  React.useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      roteamento.push('/');
+    }
+  }, [authLoading, isAuthenticated, roteamento]);
+
+  React.useEffect(() => {
+    if (!isAuthenticated) return;
+    
     const unsubscribe = subscribeToMessages((messages) => {
       setMessageList(messages);
       setLoading(false);
@@ -39,16 +74,17 @@ export default function ChatPage() {
     return () => {
       if (unsubscribe) unsubscribe();
     };
-  }, []);
+  }, [isAuthenticated]);
 
   async function handleNovaMensagem(newMessage) {
     if (newMessage && newMessage.trim()) {
       try {
         await sendMessage(usuarioLogado, newMessage.trim());
         setMessage("");
+        setSendError("");
       } catch (error) {
         console.error('Error sending message:', error);
-        alert('Error sending message. Please try again.');
+        setSendError(error.message || 'Error sending message. Please try again.');
       }
     }
   }
@@ -64,6 +100,33 @@ export default function ChatPage() {
     } else {
       alert("Don't delete other people's messages :(");
     }
+  }
+
+  if (authLoading) {
+    return (
+      <Box
+        styleSheet={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100vh",
+          backgroundColor: appConfig.theme.colors.neutrals[900],
+        }}
+      >
+        <Text
+          styleSheet={{
+            color: appConfig.theme.colors.primary[400],
+            fontSize: "18px",
+          }}
+        >
+          Loading...
+        </Text>
+      </Box>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
   }
 
   return (
@@ -98,7 +161,7 @@ export default function ChatPage() {
           padding: "15px",
         }}
       >
-        <Header />
+        <Header onLogout={logout} />
         <Box
           styleSheet={{
             position: "relative",
@@ -116,15 +179,6 @@ export default function ChatPage() {
             setMessageList={setMessageList}
             deleteMessage={handleDelMessage}
           />
-          {/* {listaDeMensagens.map((mensagemAtual) => {
-              return (
-                <li key={mensagemAtual.id}>
-                {mensagemAtual.de}: {mensagemAtual.texto}
-                </li>
-                )
-              })} */}
-
-          {/* <MessageList messages={MessageList} /> */}
           <Box
             as="form"
             styleSheet={{
@@ -173,7 +227,6 @@ export default function ChatPage() {
                 color: appConfig.theme.colors.neutrals[200],
               }}
             />
-            {/* Callback */}
             <ButtonSendSticker
               onStickerClick={(sticker) => {
                 handleNovaMensagem(`:sticker: ${sticker}`);
@@ -198,6 +251,21 @@ export default function ChatPage() {
               }}
             />
           </Box>
+          {sendError && (
+            <Text
+              styleSheet={{
+                color: "#ff6b6b",
+                fontSize: "12px",
+                padding: "8px",
+                marginTop: "4px",
+                backgroundColor: "rgba(255, 107, 107, 0.1)",
+                borderRadius: "4px",
+                textAlign: "center",
+              }}
+            >
+              {sendError}
+            </Text>
+          )}
         </Box>
       </Box>
     </Box>
@@ -205,7 +273,18 @@ export default function ChatPage() {
   );
 }
 
-function Header() {
+function Header({ onLogout }) {
+  const roteamento = useRouter();
+  
+  const handleLogout = async () => {
+    try {
+      await onLogout();
+      roteamento.push('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+  
   return (
     <>
       <Box
@@ -219,7 +298,7 @@ function Header() {
       >
         <Title>Chat</Title>
         <Button
-          type="submit"
+          onClick={handleLogout}
           label="Logout"
           buttonColors={{
             contrastColor: appConfig.theme.colors.neutrals["000"],
@@ -227,7 +306,6 @@ function Header() {
             mainColorLight: appConfig.theme.colors.primary[500],
             mainColorStrong: appConfig.theme.colors.primary[500],
           }}
-          href="/"
         />
       </Box>
     </>
@@ -235,8 +313,6 @@ function Header() {
 }
 
 function MessageList(props) {
-  // console.log("MessageList", props);
-
   const handleDelMessage = props.deleteMessage;
   return (
     <Box
@@ -246,7 +322,6 @@ function MessageList(props) {
         display: "flex",
         flexDirection: "column-reverse",
         flex: 1,
-        // cor do texto do chat
         color: appConfig.theme.colors.neutrals["000"],
         marginBottom: "10px",
       }}
@@ -303,15 +378,9 @@ function MessageList(props) {
                 }}
                 tag="span"
               >
-                {message.created_at 
-                  ? new Date(message.created_at).toLocaleDateString('pt-BR', {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })
-                  : new Date().toLocaleDateString('pt-BR')
+                {message.createdAt 
+                  ? formatMessageTime(message.createdAt)
+                  : 'just now'
                 }
               </Text>
 

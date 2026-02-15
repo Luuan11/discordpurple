@@ -39,8 +39,6 @@ function GlobalStyle() {
               flex: 1;
             }
 
-            
-
             #__next {
               flex: 1;
             }
@@ -48,7 +46,6 @@ function GlobalStyle() {
             #__next > * {
               flex: 1;
             }
-
             /* ./App fit Height */
         `}
       </style>
