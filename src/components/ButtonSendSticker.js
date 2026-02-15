@@ -9,7 +9,7 @@ export function ButtonSendSticker(props) {
     <Box
       styleSheet={{
         position: "relative",
-        flexShrink: 0,
+        marginLeft: "8px",
       }}
     >
       <Button
@@ -22,8 +22,8 @@ export function ButtonSendSticker(props) {
         styleSheet={{
           borderRadius: "50%",
           padding: "5px",
-          minWidth: "45px",
-          minHeight: "45px",
+          minWidth: "50px",
+          minHeight: "50px",
           fontSize: "20px",
           display: "flex",
           alignItems: "center",
