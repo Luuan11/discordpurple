@@ -51,13 +51,6 @@ export default function ChatPage() {
       const timer = setTimeout(() => setSendError(""), 3000);
       return () => clearTimeout(timer);
     }
-
-  React.useEffect(() => {
-    if (storageWarning) {
-      const timer = setTimeout(() => setStorageWarning(""), 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [storageWarning]);
   }, [sendError]);
 
   React.useEffect(() => {
@@ -69,13 +62,6 @@ export default function ChatPage() {
 
   React.useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-    // Check storage on page load
-    cleanupOldMessages().then((result) => {
-      if (result.cleaned && result.count > 0) {
-        setStorageWarning(`🗑️ Removed ${result.count} old messages to save storage!`);
-      }
-    }).catch(err => console.error('Initial cleanup error:', err));
-    
       roteamento.push('/');
     }
   }, [authLoading, isAuthenticated, roteamento]);
@@ -88,7 +74,7 @@ export default function ChatPage() {
         setStorageWarning(`🗑️ Removed ${result.count} old messages to save storage!`);
       }
     }).catch(err => console.error('Initial cleanup error:', err));
-    
+
     const unsubscribe = subscribeToMessages((messages) => {
       setMessageList(messages);
       setLoading(false);
