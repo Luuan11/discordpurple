@@ -4,7 +4,7 @@ import appConfig from "../config.json";
 import { useRouter } from "next/router";
 import { ButtonSendSticker } from "../src/components/ButtonSendSticker";
 import { SEOHead } from "../src/components/SEOHead";
-import { sendMessage, subscribeToMessages, deleteMessage, updateMessage, MAX_MESSAGE_LENGTH } from "../src/services/firebase";
+import { sendMessage, subscribeToMessages, deleteMessage, updateMessage, MAX_MESSAGE_LENGTH, cleanupOldMessages } from "../src/services/firebase";
 import { useAuth } from "../src/hooks/useAuth";
 
 function Title(props) {
@@ -39,6 +39,7 @@ function formatMessageTime(timestamp) {
 export default function ChatPage() {
   const [message, setMessage] = React.useState("");
   const [sendError, setSendError] = React.useState("");
+  const [storageWarning, setStorageWarning] = React.useState("");
   const roteamento = useRouter();
   const { user, loading: authLoading, logout, isAuthenticated } = useAuth();
   const usuarioLogado = user?.githubUsername || roteamento.query.username;
@@ -50,10 +51,24 @@ export default function ChatPage() {
       const timer = setTimeout(() => setSendError(""), 3000);
       return () => clearTimeout(timer);
     }
+
+  React.useEffect(() => {
+    if (storageWarning) {
+      const timer = setTimeout(() => setStorageWarning(""), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [storageWarning]);
   }, [sendError]);
 
   React.useEffect(() => {
     if (!authLoading && !isAuthenticated) {
+    // Check storage on page load
+    cleanupOldMessages().then((result) => {
+      if (result.cleaned && result.count > 0) {
+        setStorageWarning(`🗑️ Removed ${result.count} old messages to save storage!`);
+      }
+    }).catch(err => console.error('Initial cleanup error:', err));
+    
       roteamento.push('/');
     }
   }, [authLoading, isAuthenticated, roteamento]);
@@ -171,6 +186,40 @@ export default function ChatPage() {
         }}
       >
         <Header onLogout={logout} />
+        {storageWarning && (
+          <Box
+            styleSheet={{
+              backgroundColor: "rgba(255, 165, 0, 0.9)",
+              color: "#000",
+              padding: "12px 16px",
+              borderRadius: "5px",
+              marginBottom: "12px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "14px",
+              fontWeight: "500",
+              animation: "fadeInOut 5s ease-in-out"
+            }}
+          >
+            <Text
+              styleSheet={{
+                color: "#000",
+                fontSize: "14px",
+              }}
+            >
+              {storageWarning}
+            </Text>
+            <style>{`
+              @keyframes fadeInOut {
+                0% { opacity: 0; transform: translateY(-10px); }
+                10% { opacity: 1; transform: translateY(0); }
+                90% { opacity: 1; transform: translateY(0); }
+                100% { opacity: 0; transform: translateY(-10px); }
+              }
+            `}</style>
+          </Box>
+        )}
         <Box
           styleSheet={{
             position: "relative",
