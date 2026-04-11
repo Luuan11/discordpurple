@@ -4,7 +4,7 @@ import appConfig from "../config.json";
 import { useRouter } from "next/router";
 import { ButtonSendSticker } from "../src/components/ButtonSendSticker";
 import { SEOHead } from "../src/components/SEOHead";
-import { sendMessage, subscribeToMessages, deleteMessage, updateMessage, MAX_MESSAGE_LENGTH } from "../src/services/firebase";
+import { sendMessage, subscribeToMessages, deleteMessage, updateMessage, MAX_MESSAGE_LENGTH, cleanupOldMessages } from "../src/services/firebase";
 import { useAuth } from "../src/hooks/useAuth";
 
 function Title(props) {
@@ -39,6 +39,7 @@ function formatMessageTime(timestamp) {
 export default function ChatPage() {
   const [message, setMessage] = React.useState("");
   const [sendError, setSendError] = React.useState("");
+  const [storageWarning, setStorageWarning] = React.useState("");
   const roteamento = useRouter();
   const { user, loading: authLoading, logout, isAuthenticated } = useAuth();
   const usuarioLogado = user?.githubUsername || roteamento.query.username;
@@ -53,6 +54,13 @@ export default function ChatPage() {
   }, [sendError]);
 
   React.useEffect(() => {
+    if (storageWarning) {
+      const timer = setTimeout(() => setStorageWarning(""), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [storageWarning]);
+
+  React.useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       roteamento.push('/');
     }
@@ -60,6 +68,12 @@ export default function ChatPage() {
 
   React.useEffect(() => {
     if (!isAuthenticated) return;
+
+    cleanupOldMessages().then((result) => {
+      if (result.cleaned && result.count > 0) {
+        setStorageWarning(`🗑️ Removed ${result.count} old messages to save storage!`);
+      }
+    }).catch(err => console.error('Initial cleanup error:', err));
     
     const unsubscribe = subscribeToMessages((messages) => {
       setMessageList(messages);
