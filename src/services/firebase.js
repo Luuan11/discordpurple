@@ -40,8 +40,61 @@ if (isConfigValid) {
 }
 
 const userLastMessageTime = new Map();
-const RATE_LIMIT_MS = 3000;
+const RATE_LIMIT_MS = 10000;
 export const MAX_MESSAGE_LENGTH = 200;
+export const MAX_MESSAGES = 200; // Maximum messages to keep in database
+let isCleanupRunning = false;
+
+export async function cleanupOldMessages() {
+  if (!database || isCleanupRunning) {
+    return { cleaned: false, reason: 'Not configured or cleanup already running' };
+  }
+
+  isCleanupRunning = true;
+  try {
+    // Get all messages sorted by creation date
+    const allMessagesQuery = query(
+      messagesRef,
+      orderByChild('createdAt')
+    );
+
+    return new Promise((resolve) => {
+      onValue(allMessagesQuery, async (snapshot) => {
+        const allMessages = [];
+        snapshot.forEach((childSnapshot) => {
+          allMessages.push({
+            id: childSnapshot.key,
+            timestamp: childSnapshot.val().createdAt || 0
+          });
+        });
+
+        // If we have more than MAX_MESSAGES, delete the oldest ones
+        if (allMessages.length > MAX_MESSAGES) {
+          const messagesToDelete = allMessages.slice(0, allMessages.length - MAX_MESSAGES);
+          try {
+            for (const msg of messagesToDelete) {
+              await deleteMessage(msg.id);
+            }
+            console.log(`Cleaned up ${messagesToDelete.length} old messages`);
+            isCleanupRunning = false;
+            resolve({ cleaned: true, count: messagesToDelete.length });
+          } catch (error) {
+            console.error('Error during cleanup:', error);
+            isCleanupRunning = false;
+            resolve({ cleaned: false, error: error.message });
+          }
+        } else {
+          isCleanupRunning = false;
+          resolve({ cleaned: false, reason: 'Under message limit' });
+        }
+      }, { onlyOnce: true });
+    });
+  } catch (error) {
+    console.error('Error in cleanupOldMessages:', error);
+    isCleanupRunning = false;
+    return { cleaned: false, error: error.message };
+  }
+}
 
 export async function sendMessage(from, text) {
   if (!messagesRef) {
@@ -73,6 +126,10 @@ export async function sendMessage(from, text) {
     });
     
     userLastMessageTime.set(from, now);
+    
+    // Trigger cleanup asynchronously after message is sent
+    cleanupOldMessages().catch(err => console.error('Cleanup error:', err));
+    
     return { success: true };
   } catch (error) {
     console.error('Error sending message:', error);
@@ -90,7 +147,7 @@ export function subscribeToMessages(callback) {
   const messagesQuery = query(
     messagesRef,
     orderByChild('createdAt'),
-    limitToLast(50)
+    limitToLast(200)
   );
 
   const unsubscribe = onValue(messagesQuery, (snapshot) => {
